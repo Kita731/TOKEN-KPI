@@ -341,4 +341,31 @@ const KPI = {
     localStorage.removeItem('kpi_weekly');
     localStorage.removeItem('kpi_pge');
   },
+
+  // ── Remote Sync ───────────────────────────────────────
+
+  async syncFromRemote(baseUrl = 'https://raw.githubusercontent.com/kita731/TOKEN-KPI/main/data') {
+    const targets = [
+      { file: 'sessions.csv', key: 'kpi_sessions', idField: 'session_id' },
+      { file: 'weekly.csv',   key: 'kpi_weekly',   idField: 'week_start' },
+      { file: 'pge.csv',      key: 'kpi_pge',      idField: 'session_id' },
+    ];
+    let totalAdded = 0;
+    for (const { file, key, idField } of targets) {
+      try {
+        const res = await fetch(`${baseUrl}/${file}?_=${Date.now()}`);
+        if (!res.ok) continue;
+        const text = await res.text();
+        const rows = this.parseCSV(text);
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        const existingIds = new Set(existing.map(r => r[idField]));
+        const newRows = rows.filter(r => r[idField] && !existingIds.has(r[idField]));
+        if (newRows.length) {
+          localStorage.setItem(key, JSON.stringify([...existing, ...newRows]));
+          totalAdded += newRows.length;
+        }
+      } catch (_) { /* 離線或檔案不存在時靜默略過 */ }
+    }
+    return totalAdded;
+  },
 };

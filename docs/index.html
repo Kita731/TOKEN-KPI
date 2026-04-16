@@ -443,7 +443,17 @@ if (msg) {
 }
 
 I18N.init();
-refresh();
+(async () => {
+  try {
+    const added = await KPI.syncFromRemote();
+    if (added > 0) {
+      const f = document.getElementById('flash');
+      f.innerHTML = `<div class="flash"><i class="bi bi-cloud-download"></i> 從 GitHub 同步了 ${added} 筆新資料</div>`;
+      setTimeout(() => f.innerHTML = '', 4000);
+    }
+  } catch (_) {}
+  refresh();
+})();
 </script>
 </body>
 </html>

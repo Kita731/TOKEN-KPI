@@ -243,8 +243,7 @@ function onLangChange() {
 }
 
 I18N.init();
-loadSummary();
-loadHistory();
+KPI.syncFromRemote().then(() => { loadSummary(); loadHistory(); }).catch(() => { loadSummary(); loadHistory(); });
 </script>
 </body>
 </html>

@@ -1,3 +1,8 @@
+## [0.5.1] - 2026-04-17
+- setup.py：自動偵測 repo 路徑並寫入 ~/.claude/settings.json，clone 到任何路徑無需手動修改
+- 保留使用者現有其他 hooks（merge 模式），路徑相同時不重複寫入
+- README：setup 步驟改為 `git clone + py setup.py`，移除手動修改路徑的說明
+
 ## [0.5.0] - 2026-04-17
 - i18n.js：新增 10 條 desc.* 指標詳細說明 + 11 條 help.* 欄位說明（中英各一份）
 - index.html：Health Card 加 ⓘ tooltip，點擊顯示指標說明，語言切換即時更新

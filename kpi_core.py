@@ -1,6 +1,7 @@
 """共用資料層：CSV 讀寫、指標計算、健康狀態判斷"""
 
 import csv
+import json
 import uuid
 from datetime import date, timedelta
 from pathlib import Path
@@ -10,6 +11,23 @@ DATA_DIR = Path(__file__).parent / "data"
 SESSIONS_CSV = DATA_DIR / "sessions.csv"
 WEEKLY_CSV = DATA_DIR / "weekly.csv"
 PGE_CSV = DATA_DIR / "pge.csv"
+CONFIG_FILE = DATA_DIR / "config.json"
+
+DEFAULT_CONFIG = {"retention_days": 30}
+
+
+def load_config() -> dict:
+    if CONFIG_FILE.exists():
+        try:
+            return {**DEFAULT_CONFIG, **json.loads(CONFIG_FILE.read_text(encoding="utf-8"))}
+        except Exception:
+            pass
+    return dict(DEFAULT_CONFIG)
+
+
+def save_config(config: dict):
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    CONFIG_FILE.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
 
 # 指標目標門檻
 THRESHOLDS = {
@@ -129,6 +147,10 @@ def calc_pge_derived(data: dict) -> dict:
 def get_sessions(n: int = None) -> list[dict]:
     rows = load_csv(SESSIONS_CSV)
     rows.sort(key=lambda r: r.get("date", ""))
+    retention = load_config().get("retention_days", 0)
+    if retention and retention > 0:
+        cutoff = str(date.today() - timedelta(days=retention))
+        rows = [r for r in rows if r.get("date", "") >= cutoff]
     return rows[-n:] if n else rows
 
 

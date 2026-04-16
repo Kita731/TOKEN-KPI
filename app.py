@@ -126,5 +126,47 @@ def api_week_summary():
     return jsonify(kpi.get_week_summary(offset))
 
 
+@app.route("/api/config", methods=["GET", "POST"])
+def api_config():
+    if request.method == "POST":
+        data = request.get_json(force=True) or {}
+        cfg = kpi.load_config()
+        if "retention_days" in data:
+            cfg["retention_days"] = int(data["retention_days"])
+        kpi.save_config(cfg)
+        return jsonify({"ok": True, "config": cfg})
+    return jsonify(kpi.load_config())
+
+
+@app.route("/api/clear", methods=["POST"])
+def api_clear():
+    data = request.get_json(force=True) or {}
+    before = data.get("before")  # ISO date string，空則清除全部
+
+    if before:
+        rows = kpi.load_csv(kpi.SESSIONS_CSV)
+        kept = [r for r in rows if r.get("date", "") >= before]
+        pge_rows = kpi.load_csv(kpi.PGE_CSV)
+        kept_pge = [r for r in pge_rows if r.get("date", "") >= before]
+    else:
+        kept, kept_pge = [], []
+
+    # 重寫 sessions.csv
+    import csv as _csv
+    with open(kpi.SESSIONS_CSV, "w", newline="", encoding="utf-8") as f:
+        w = _csv.DictWriter(f, fieldnames=kpi.SESSIONS_FIELDNAMES)
+        w.writeheader()
+        w.writerows(kept)
+
+    # 重寫 pge.csv（若有）
+    if kpi.PGE_CSV.exists():
+        with open(kpi.PGE_CSV, "w", newline="", encoding="utf-8") as f:
+            w = _csv.DictWriter(f, fieldnames=kpi.PGE_FIELDNAMES)
+            w.writeheader()
+            w.writerows(kept_pge)
+
+    return jsonify({"ok": True, "kept": len(kept)})
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

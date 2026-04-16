@@ -50,6 +50,8 @@
 
     .btn-submit { background: var(--accent); color: #fff; border-color: var(--accent); padding: .55rem 1.3rem; font-size: .875rem; font-weight: 600; border-radius: 8px; }
     .btn-submit:hover { background: #6b58e8; }
+    .auto-banner { background: #7c6af718; border: 1px solid #7c6af740; color: #a89cf7; padding: .7rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .85rem; display: flex; align-items: center; gap: .6rem; }
+    .auto-tag { background: #7c6af730; color: #c4b8ff; font-size: .65rem; padding: .15rem .45rem; border-radius: 4px; font-weight: 700; letter-spacing: .05em; flex-shrink: 0; }
 
     .toggle-row { display: flex; align-items: center; justify-content: space-between; }
     .switch { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
@@ -80,6 +82,10 @@
 </nav>
 
 <div class="page">
+  <div id="auto-banner" style="display:none" class="auto-banner">
+    <span class="auto-tag">AUTO</span>
+    <span id="auto-banner-text"></span>
+  </div>
   <h1 style="font-size:1.25rem;font-weight:700;margin:0 0 1.25rem">
     <i class="bi bi-plus-circle" style="color:var(--accent);margin-right:.5rem"></i><span data-i18n="log.title">記錄 Session</span>
   </h1>
@@ -270,8 +276,37 @@ function save() {
   location.href = 'index.html';
 }
 
+// ── URL 參數自動填入（來自 finalize.py）────────────────────
+function applyURLParams() {
+  const p = new URLSearchParams(location.search);
+  if (!p.get('auto')) return;
+
+  const setVal = (id, key) => { const v = p.get(key); if (v !== null) document.getElementById(id).value = v; };
+  setVal('project',     'project');
+  setVal('total_tasks', 'total_tasks');
+  setVal('passed',      'passed');
+  setVal('ic',          'ic');
+  setVal('lines_gen',   'lines_gen');
+  setVal('lines_kept',  'lines_kept');
+  setVal('ttwc_claude', 'ttwc_claude');
+  setVal('ttwc_manual', 'ttwc_manual');
+  setVal('notes',       'notes');
+
+  const ic       = p.get('ic')        || '?';
+  const linesGen = p.get('lines_gen') || '?';
+  const dur      = p.get('ttwc_claude') || '?';
+
+  const banner = document.getElementById('auto-banner');
+  const bannerText = document.getElementById('auto-banner-text');
+  banner.style.display = 'flex';
+  bannerText.textContent = I18N.lang === 'zh'
+    ? `已從 Claude Code 自動偵測：${ic} 次來回 · ${linesGen} 行產出 · ${dur} 分鐘。請確認數字後儲存。`
+    : `Auto-detected from Claude Code: ${ic} turns · ${linesGen} lines · ${dur} min. Review and save.`;
+}
+
 document.getElementById('date').value = KPI.today();
 I18N.init();
+applyURLParams();
 update();
 </script>
 </body>

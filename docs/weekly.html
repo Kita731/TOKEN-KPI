@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>週報 — TOKEN KPI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f18; --card: #141720; --border: #252840;
+      --text: #dde2f0; --muted: #5a6488; --accent: #7c6af7;
+      --pass: #4ade80; --warn: #fbbf24; --fail: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; margin: 0; }
+    a { color: var(--accent); text-decoration: none; }
+
+    nav { background: var(--card); border-bottom: 1px solid var(--border); padding: .75rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; position: sticky; top: 0; z-index: 100; }
+    .brand { font-weight: 700; font-size: 1rem; color: var(--accent); letter-spacing: .04em; }
+    .brand i { margin-right: .4rem; }
+    .nav-links { display: flex; gap: .25rem; }
+    .nav-links a { padding: .4rem .75rem; border-radius: 6px; font-size: .875rem; color: var(--muted); transition: all .15s; }
+    .nav-links a:hover, .nav-links a.active { background: #1e2235; color: var(--text); }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+    .sec { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 1rem; }
+
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .col-5 { flex: 5 1 300px; }
+    .col-7 { flex: 7 1 360px; }
+
+    .mini-metric { background: #0d0f18; border-radius: 8px; padding: .6rem .9rem; }
+    .mini-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .15rem; }
+    .mini-val { font-size: 1.25rem; font-weight: 700; }
+    .mini-note { font-size: .65rem; color: var(--muted); margin-top: .1rem; }
+    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+
+    label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: .35rem; }
+    input[type=text], input[type=number], textarea {
+      width: 100%; background: #0d0f18; border: 1px solid var(--border);
+      color: var(--text); padding: .55rem .75rem; border-radius: 8px; font-size: .875rem;
+      transition: border-color .15s; outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #7c6af718; }
+    textarea { resize: vertical; min-height: 55px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; }
+
+    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.25rem; border-radius: 8px; font-size: .875rem; border: none; cursor: pointer; font-weight: 600; transition: all .15s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #6b58e8; }
+
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    th { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; padding: .6rem .75rem; border-bottom: 1px solid var(--border); font-weight: 500; }
+    td { padding: .6rem .75rem; border-bottom: 1px solid #161828; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #161828; }
+
+    .flash { background: #16a34a18; border: 1px solid #16a34a30; color: var(--pass); padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .875rem; }
+    .empty { text-align: center; padding: 1.5rem; color: var(--muted); }
+
+    @media (max-width: 580px) {
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="brand"><i class="bi bi-graph-up-arrow"></i>TOKEN KPI</span>
+  <div class="nav-links">
+    <a href="index.html"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
+    <a href="log.html"><i class="bi bi-plus-circle"></i> <span>記錄</span></a>
+    <a href="weekly.html" class="active"><i class="bi bi-calendar-week"></i> <span>週報</span></a>
+  </div>
+</nav>
+
+<div class="page">
+  <h1 style="font-size:1.25rem;font-weight:700;margin:0 0 1.25rem">
+    <i class="bi bi-calendar-week" style="color:var(--accent);margin-right:.5rem"></i>週報
+  </h1>
+
+  <div id="flash"></div>
+
+  <div class="row">
+    <!-- 本週彙整 -->
+    <div class="col-5 card">
+      <div class="sec">本週自動彙整</div>
+      <div id="summary-loading" style="color:var(--muted);font-size:.85rem">計算中…</div>
+      <div id="summary-content" style="display:none">
+        <div style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem" id="week-range"></div>
+        <div class="mini-grid" id="core-metrics"></div>
+        <div id="pge-section" style="display:none;margin-top:.75rem">
+          <div class="sec" style="margin-bottom:.5rem">PGE 流程指標</div>
+          <div class="mini-grid" id="pge-metrics"></div>
+        </div>
+      </div>
+      <div id="summary-empty" style="display:none;color:var(--muted);font-size:.85rem">
+        本週尚無 session 資料
+      </div>
+    </div>
+
+    <!-- 填寫品質指標 -->
+    <div class="col-7 card">
+      <div class="sec">記錄品質指標</div>
+      <div class="grid-3" style="margin-bottom:.75rem">
+        <div>
+          <label>BIR — bugs / 1000 行</label>
+          <input type="number" id="bir" placeholder="例：2.5" step="0.1" min="0">
+        </div>
+        <div>
+          <label>RR — 重構比例</label>
+          <input type="number" id="rr" placeholder="0.0 ~ 1.0" step="0.01" min="0" max="1">
+        </div>
+        <div>
+          <label>CE — Context Efficiency</label>
+          <input type="number" id="ce" placeholder="0.0 ~ 1.0" step="0.01" min="0" max="1">
+        </div>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label>本週備註</label>
+        <textarea id="notes" placeholder="（選填）本週觀察、調整方向…"></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="saveWeekly()">
+        <i class="bi bi-save"></i> 儲存週報
+      </button>
+    </div>
+  </div>
+
+  <!-- 歷史週報 -->
+  <div class="card">
+    <div class="sec">歷史週報</div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>週次</th><th>Sessions</th>
+            <th>BIR</th><th>RR</th><th>CE</th><th>備註</th>
+          </tr>
+        </thead>
+        <tbody id="history"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="js/kpi.js"></script>
+<script>
+function miniCard(label, val, suffix = '%', note = '') {
+  const display = val !== null ? (suffix === '%' ? (val * 100).toFixed(1) + '%' : val.toFixed(2)) : '—';
+  return `<div class="mini-metric">
+    <div class="mini-label">${label}</div>
+    <div class="mini-val">${display}</div>
+    ${note ? `<div class="mini-note">${note}</div>` : ''}
+  </div>`;
+}
+
+function loadSummary() {
+  const s = KPI.getWeekSummary();
+  document.getElementById('summary-loading').style.display = 'none';
+
+  if (!s.total_sessions) {
+    document.getElementById('summary-empty').style.display = '';
+    return;
+  }
+
+  document.getElementById('summary-content').style.display = '';
+  document.getElementById('week-range').textContent =
+    `${s.week_start} ～ ${s.week_end}（${s.total_sessions} sessions）`;
+
+  document.getElementById('core-metrics').innerHTML =
+    miniCard('TCR', s.avg_tcr, '%', '目標 >70%') +
+    miniCard('IC',  s.avg_ic,  '',  '目標 <3') +
+    miniCard('CAR', s.avg_car, '%', '目標 >60%') +
+    miniCard('TTWC', s.avg_ttwc, '%', '目標 <50%');
+
+  if (s.has_pge) {
+    document.getElementById('pge-section').style.display = '';
+    document.getElementById('pge-metrics').innerHTML =
+      miniCard('PA',  s.avg_pa,  '%', 'Plan Accuracy') +
+      miniCard('ECR', s.avg_ecr, '%', 'Catch Rate') +
+      `<div class="mini-metric"><div class="mini-label">HL / session</div><div class="mini-val">${s.avg_hl !== null ? s.avg_hl.toFixed(1) : '—'}</div></div>`;
+  }
+}
+
+function loadHistory() {
+  const data = KPI.getWeekly().slice().reverse();
+  const tbody = document.getElementById('history');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty">尚無週報記錄</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(w => {
+    const rrVal = w.rr ? parseFloat(w.rr) : null;
+    const rrColor = rrVal !== null ? (rrVal > 0.3 ? 'var(--fail)' : 'var(--pass)') : '';
+    return `<tr>
+      <td style="white-space:nowrap;color:var(--muted);font-size:.8rem">${w.week_start} ～ ${w.week_end}</td>
+      <td>${w.total_sessions}</td>
+      <td>${w.bir || '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="color:${rrColor}">${rrVal !== null ? (rrVal*100).toFixed(0)+'%' : '<span style="color:var(--muted)">—</span>'}</td>
+      <td>${w.ce ? (parseFloat(w.ce)*100).toFixed(0)+'%' : '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="color:var(--muted);font-size:.78rem">${w.notes||''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function saveWeekly() {
+  const s = KPI.getWeekSummary();
+  KPI.addWeekly({
+    week_start:      s.week_start,
+    week_end:        s.week_end,
+    total_sessions:  s.total_sessions,
+    bir:             document.getElementById('bir').value,
+    rr:              document.getElementById('rr').value,
+    ce:              document.getElementById('ce').value,
+    notes:           document.getElementById('notes').value,
+  });
+  document.getElementById('bir').value   = '';
+  document.getElementById('rr').value    = '';
+  document.getElementById('ce').value    = '';
+  document.getElementById('notes').value = '';
+  loadHistory();
+  const f = document.getElementById('flash');
+  f.innerHTML = `<div class="flash"><i class="bi bi-check-circle"></i> 週報已儲存</div>`;
+  setTimeout(() => f.innerHTML = '', 3000);
+}
+
+loadSummary();
+loadHistory();
+</script>
+</body>
+</html>

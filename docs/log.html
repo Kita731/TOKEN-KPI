@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>記錄 Session — TOKEN KPI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f18; --card: #141720; --border: #252840;
+      --text: #dde2f0; --muted: #5a6488; --accent: #7c6af7;
+      --pass: #4ade80; --warn: #fbbf24; --fail: #f87171;
+    }
+    * { box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; margin: 0; }
+    a { color: var(--accent); text-decoration: none; }
+
+    nav { background: var(--card); border-bottom: 1px solid var(--border); padding: .75rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; position: sticky; top: 0; z-index: 100; }
+    .brand { font-weight: 700; font-size: 1rem; color: var(--accent); letter-spacing: .04em; }
+    .brand i { margin-right: .4rem; }
+    .nav-links { display: flex; gap: .25rem; }
+    .nav-links a { padding: .4rem .75rem; border-radius: 6px; font-size: .875rem; color: var(--muted); transition: all .15s; }
+    .nav-links a:hover, .nav-links a.active { background: #1e2235; color: var(--text); }
+
+    .page { max-width: 720px; margin: 0 auto; padding: 1.5rem; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: .75rem; }
+    .sec { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 1rem; }
+
+    .grid { display: grid; gap: .75rem; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: .35rem; }
+    input[type=text], input[type=number], input[type=date], textarea, select {
+      width: 100%; background: #0d0f18; border: 1px solid var(--border);
+      color: var(--text); padding: .55rem .75rem; border-radius: 8px; font-size: .875rem;
+      transition: border-color .15s; outline: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #7c6af718; }
+    textarea { resize: vertical; min-height: 60px; }
+
+    .preview-box { background: #0d0f18; border: 1px solid var(--border); border-radius: 8px; padding: .55rem .75rem; }
+    .preview-label { font-size: .7rem; color: var(--muted); margin-bottom: .1rem; }
+    .preview-val { font-size: 1.5rem; font-weight: 700; }
+    .c-pass { color: var(--pass); }
+    .c-warn { color: var(--warn); }
+    .c-fail { color: var(--fail); }
+
+    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.25rem; border-radius: 8px; font-size: .875rem; border: none; cursor: pointer; font-weight: 600; transition: all .15s; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #6b58e8; }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .btn-ghost:hover { color: var(--text); background: var(--card); }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+    .switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 22px; transition: .2s; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s; }
+    input:checked + .slider { background: var(--accent); }
+    input:checked + .slider:before { transform: translateX(16px); }
+
+    @media (max-width: 520px) {
+      .grid-3 { grid-template-columns: 1fr 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="brand"><i class="bi bi-graph-up-arrow"></i>TOKEN KPI</span>
+  <div class="nav-links">
+    <a href="index.html"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
+    <a href="log.html" class="active"><i class="bi bi-plus-circle"></i> <span>記錄</span></a>
+    <a href="weekly.html"><i class="bi bi-calendar-week"></i> <span>週報</span></a>
+  </div>
+</nav>
+
+<div class="page">
+  <h1 style="font-size:1.25rem;font-weight:700;margin:0 0 1.25rem">
+    <i class="bi bi-plus-circle" style="color:var(--accent);margin-right:.5rem"></i>記錄 Session
+  </h1>
+
+  <!-- 基本資訊 -->
+  <div class="card">
+    <div class="sec">基本資訊</div>
+    <div class="grid grid-2">
+      <div>
+        <label>專案名稱</label>
+        <input type="text" id="project" placeholder="例：TOKEN-KPI" required>
+      </div>
+      <div>
+        <label>日期</label>
+        <input type="date" id="date">
+      </div>
+    </div>
+  </div>
+
+  <!-- 核心指標 -->
+  <div class="card">
+    <div class="sec">核心指標</div>
+
+    <!-- TCR -->
+    <div class="grid grid-3" style="margin-bottom:.75rem">
+      <div>
+        <label>總任務數</label>
+        <input type="number" id="total_tasks" value="5" min="1" oninput="update()">
+      </div>
+      <div>
+        <label>一次通過數</label>
+        <input type="number" id="passed" value="4" min="0" oninput="update()">
+      </div>
+      <div>
+        <div class="preview-box">
+          <div class="preview-label">TCR（目標 &gt;70%）</div>
+          <div class="preview-val" id="p-tcr">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IC -->
+    <div class="grid grid-3" style="margin-bottom:.75rem">
+      <div>
+        <label>平均來回次數（IC）</label>
+        <input type="number" id="ic" value="2" step="0.1" min="1" oninput="update()">
+      </div>
+      <div>
+        <div class="preview-box">
+          <div class="preview-label">IC 狀態（目標 &lt;3）</div>
+          <div class="preview-val" id="p-ic">—</div>
+        </div>
+      </div>
+      <div></div>
+    </div>
+
+    <!-- CAR -->
+    <div class="grid grid-3" style="margin-bottom:.75rem">
+      <div>
+        <label>Claude 產出行數</label>
+        <input type="number" id="lines_gen" value="100" min="1" oninput="update()">
+      </div>
+      <div>
+        <label>最終保留行數</label>
+        <input type="number" id="lines_kept" value="80" min="0" oninput="update()">
+      </div>
+      <div>
+        <div class="preview-box">
+          <div class="preview-label">CAR（目標 &gt;60%）</div>
+          <div class="preview-val" id="p-car">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TTWC -->
+    <div class="grid grid-3" style="margin-bottom:.75rem">
+      <div>
+        <label>Claude 完成時間（分）</label>
+        <input type="number" id="ttwc_claude" value="15" step="0.5" min="0" oninput="update()">
+      </div>
+      <div>
+        <label>手寫估計時間（分）</label>
+        <input type="number" id="ttwc_manual" value="40" step="0.5" min="1" oninput="update()">
+      </div>
+      <div>
+        <div class="preview-box">
+          <div class="preview-label">TTWC（目標 &lt;50%）</div>
+          <div class="preview-val" id="p-ttwc">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label>備註</label>
+      <textarea id="notes" placeholder="（選填）這次 session 的觀察…"></textarea>
+    </div>
+  </div>
+
+  <!-- PGE -->
+  <div class="card">
+    <div class="toggle-row" style="margin-bottom:0" id="pge-header">
+      <div class="sec" style="margin-bottom:0">PGE 流程指標（選填）</div>
+      <label class="switch">
+        <input type="checkbox" id="use_pge" onchange="togglePGE()">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div id="pge-fields" style="display:none;margin-top:1rem">
+      <div class="grid grid-3" style="margin-bottom:.75rem">
+        <div>
+          <label>Planner 步驟總數</label>
+          <input type="number" id="plan_total" value="5" min="1" oninput="update()">
+        </div>
+        <div>
+          <label>Generator 採用步驟數</label>
+          <input type="number" id="plan_adopted" value="5" min="0" oninput="update()">
+        </div>
+        <div>
+          <div class="preview-box">
+            <div class="preview-label">PA — Plan Accuracy</div>
+            <div class="preview-val" id="p-pa">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-3" style="margin-bottom:.75rem">
+        <div>
+          <label>Evaluator 抓到的問題</label>
+          <input type="number" id="eval_caught" value="0" min="0" oninput="update()">
+        </div>
+        <div>
+          <label>最終總問題數</label>
+          <input type="number" id="eval_total" value="0" min="0" oninput="update()">
+        </div>
+        <div>
+          <div class="preview-box">
+            <div class="preview-label">ECR — Catch Rate</div>
+            <div class="preview-val" id="p-ecr">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-2">
+        <div>
+          <label>Handoff Loss 次數</label>
+          <input type="number" id="hl" value="0" min="0">
+        </div>
+        <div>
+          <label>PGE 備註</label>
+          <input type="text" id="pge_notes" placeholder="（選填）">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div style="display:flex;gap:.75rem;align-items:center">
+    <button class="btn btn-primary" onclick="save()">
+      <i class="bi bi-check-lg"></i> 儲存 Session
+    </button>
+    <a href="index.html" class="btn btn-ghost">取消</a>
+  </div>
+</div>
+
+<script src="js/kpi.js"></script>
+<script>
+function pct(n, d) { return d > 0 ? n / d : 0; }
+
+function colorClass(val, target, invert) {
+  if (!invert) {
+    if (val >= target)       return 'c-pass';
+    if (val >= target * .85) return 'c-warn';
+    return 'c-fail';
+  } else {
+    if (val <= target)       return 'c-pass';
+    if (val <= target * 1.4) return 'c-warn';
+    return 'c-fail';
+  }
+}
+
+function setPreview(id, val, target, invert, fmt) {
+  const el = document.getElementById(id);
+  el.textContent = fmt(val);
+  el.className = 'preview-val ' + colorClass(val, target, invert);
+}
+
+function update() {
+  const total  = +document.getElementById('total_tasks').value  || 1;
+  const passed = +document.getElementById('passed').value       || 0;
+  const ic     = +document.getElementById('ic').value           || 0;
+  const gen    = +document.getElementById('lines_gen').value    || 1;
+  const kept   = +document.getElementById('lines_kept').value   || 0;
+  const claude = +document.getElementById('ttwc_claude').value  || 0;
+  const manual = +document.getElementById('ttwc_manual').value  || 1;
+
+  setPreview('p-tcr',  pct(passed, total),   .70, false, v => (v*100).toFixed(1)+'%');
+  setPreview('p-ic',   ic,                   3.0, true,  v => v.toFixed(1));
+  setPreview('p-car',  pct(kept, gen),        .60, false, v => (v*100).toFixed(1)+'%');
+  setPreview('p-ttwc', pct(claude, manual),   .50, true,  v => (v*100).toFixed(1)+'%');
+
+  const pt = +document.getElementById('plan_total').value   || 1;
+  const pa = +document.getElementById('plan_adopted').value || 0;
+  const ec = +document.getElementById('eval_caught').value  || 0;
+  const et = +document.getElementById('eval_total').value   || 0;
+
+  document.getElementById('p-pa').textContent  = (pct(pa,pt)*100).toFixed(1)+'%';
+  document.getElementById('p-pa').className    = 'preview-val c-pass';
+  document.getElementById('p-ecr').textContent = et > 0 ? (pct(ec,et)*100).toFixed(1)+'%' : 'N/A';
+  document.getElementById('p-ecr').className   = 'preview-val c-pass';
+}
+
+function togglePGE() {
+  document.getElementById('pge-fields').style.display =
+    document.getElementById('use_pge').checked ? '' : 'none';
+}
+
+function save() {
+  const project = document.getElementById('project').value.trim();
+  if (!project) { document.getElementById('project').focus(); return; }
+
+  const raw = {
+    date:                     document.getElementById('date').value,
+    project,
+    total_tasks:              document.getElementById('total_tasks').value,
+    passed_first_try:         document.getElementById('passed').value,
+    avg_iterations:           document.getElementById('ic').value,
+    lines_generated:          document.getElementById('lines_gen').value,
+    lines_kept:               document.getElementById('lines_kept').value,
+    ttwc_claude_min:          document.getElementById('ttwc_claude').value,
+    ttwc_manual_estimate_min: document.getElementById('ttwc_manual').value,
+    notes:                    document.getElementById('notes').value,
+  };
+
+  const session = KPI.addSession(raw);
+
+  if (document.getElementById('use_pge').checked) {
+    KPI.addPGE({
+      date:                       session.date,
+      session_id:                 session.session_id,
+      plan_steps_total:           document.getElementById('plan_total').value,
+      plan_steps_adopted:         document.getElementById('plan_adopted').value,
+      issues_caught_by_evaluator: document.getElementById('eval_caught').value,
+      total_final_issues:         document.getElementById('eval_total').value,
+      handoff_loss_count:         document.getElementById('hl').value,
+      pge_notes:                  document.getElementById('pge_notes').value,
+    });
+  }
+
+  sessionStorage.setItem('kpi_flash',
+    `Session ${session.session_id} 已記錄 — TCR ${(session.tcr*100).toFixed(0)}%  IC ${session.ic}  CAR ${(session.car*100).toFixed(0)}%  TTWC ${(session.ttwc_ratio*100).toFixed(0)}%`
+  );
+  location.href = 'index.html';
+}
+
+// Init
+document.getElementById('date').value = KPI.today();
+update();
+</script>
+</body>
+</html>

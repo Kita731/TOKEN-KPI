@@ -77,6 +77,10 @@
     .form-note { font-size: .73rem; color: var(--muted); margin-bottom: 1rem; }
     .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; }
 
+    .metric-info-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.8rem; padding:0 0 0 .3rem; vertical-align:middle; transition:color .15s; line-height:1; }
+    .metric-info-btn:hover { color:var(--accent); }
+    #metric-tip { display:none; position:fixed; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:.9rem 1rem; max-width:340px; font-size:.78rem; line-height:1.6; z-index:500; box-shadow:0 8px 32px #00000080; white-space:pre-line; color:var(--text); }
+
     @media (max-width: 640px) {
       .col-4 { flex: 1 1 calc(50% - .5rem); }
       .nav-links a span { display: none; }
@@ -118,7 +122,7 @@
   <!-- Health Cards -->
   <div class="row" style="margin-bottom:1rem">
     <div class="col-4 card">
-      <div class="card-label" data-i18n="metric.tcr.label">TCR — Task Completion Rate</div>
+      <div class="card-label"><span data-i18n="metric.tcr.label">TCR — Task Completion Rate</span><button class="metric-info-btn" data-desc-key="desc.tcr" onclick="toggleMetricTip(this)">ⓘ</button></div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-tcr">—</div>
         <div id="t-tcr" style="margin-bottom:.25rem"></div>
@@ -129,7 +133,7 @@
       </div>
     </div>
     <div class="col-4 card">
-      <div class="card-label" data-i18n="metric.ic.label">IC — Iteration Count</div>
+      <div class="card-label"><span data-i18n="metric.ic.label">IC — Iteration Count</span><button class="metric-info-btn" data-desc-key="desc.ic" onclick="toggleMetricTip(this)">ⓘ</button></div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-ic">—</div>
         <div id="t-ic" style="margin-bottom:.25rem"></div>
@@ -140,7 +144,7 @@
       </div>
     </div>
     <div class="col-4 card">
-      <div class="card-label" data-i18n="metric.car.label">CAR — Code Acceptance Rate</div>
+      <div class="card-label"><span data-i18n="metric.car.label">CAR — Code Acceptance Rate</span><button class="metric-info-btn" data-desc-key="desc.car" onclick="toggleMetricTip(this)">ⓘ</button></div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-car">—</div>
         <div id="t-car" style="margin-bottom:.25rem"></div>
@@ -151,7 +155,7 @@
       </div>
     </div>
     <div class="col-4 card">
-      <div class="card-label" data-i18n="metric.ttwc.label">TTWC — Time-to-Working-Code</div>
+      <div class="card-label"><span data-i18n="metric.ttwc.label">TTWC — Time-to-Working-Code</span><button class="metric-info-btn" data-desc-key="desc.ttwc" onclick="toggleMetricTip(this)">ⓘ</button></div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-ttwc">—</div>
         <div id="t-ttwc" style="margin-bottom:.25rem"></div>
@@ -221,6 +225,7 @@
   </div>
 </div>
 
+<div id="metric-tip"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="js/kpi.js"></script>
 <script src="js/i18n.js"></script>
@@ -234,7 +239,28 @@ const trendHTML = {
   stable: '<i class="bi bi-dash ti-stable"    style="font-size:.9rem"></i>',
 };
 
-function onLangChange() { refresh(); }
+let activeTipBtn = null;
+function toggleMetricTip(btn) {
+  const tip = document.getElementById('metric-tip');
+  if (activeTipBtn === btn) { tip.style.display = 'none'; activeTipBtn = null; return; }
+  tip.textContent = I18N.t(btn.dataset.descKey);
+  tip.style.display = 'block';
+  const rect = btn.getBoundingClientRect();
+  tip.style.left = Math.min(rect.left, window.innerWidth - 360) + 'px';
+  tip.style.top  = (rect.bottom + 8) + 'px';
+  activeTipBtn = btn;
+}
+document.addEventListener('click', e => {
+  if (activeTipBtn && !e.target.closest('#metric-tip') && !e.target.closest('.metric-info-btn')) {
+    document.getElementById('metric-tip').style.display = 'none';
+    activeTipBtn = null;
+  }
+});
+
+function onLangChange() {
+  if (activeTipBtn) document.getElementById('metric-tip').textContent = I18N.t(activeTipBtn.dataset.descKey);
+  refresh();
+}
 
 function loadHealth(n) {
   const data = KPI.getHealth(n);

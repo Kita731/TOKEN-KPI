@@ -61,6 +61,8 @@
     input:checked + .slider { background: var(--accent); }
     input:checked + .slider:before { transform: translateX(16px); }
 
+    .field-help { font-size:.71rem; color:var(--muted); margin-top:.28rem; line-height:1.55; white-space:pre-line; }
+
     @media (max-width: 520px) {
       .g3 { grid-template-columns: 1fr 1fr; }
       .g2 { grid-template-columns: 1fr; }
@@ -110,8 +112,8 @@
     <div class="sec" data-i18n="log.core">核心指標</div>
 
     <div class="g3">
-      <div><label data-i18n="log.total">總任務數</label><input type="number" id="total_tasks" value="5" min="1" oninput="update()"></div>
-      <div><label data-i18n="log.passed">一次通過數</label><input type="number" id="passed" value="4" min="0" oninput="update()"></div>
+      <div><label data-i18n="log.total">總任務數</label><input type="number" id="total_tasks" value="5" min="1" oninput="update()"><div class="field-help" data-i18n="help.total"></div></div>
+      <div><label data-i18n="log.passed">一次通過數</label><input type="number" id="passed" value="4" min="0" oninput="update()"><div class="field-help" data-i18n="help.passed"></div></div>
       <div class="preview-box">
         <div class="preview-label" data-i18n="log.p.tcr">TCR（目標 &gt;70%）</div>
         <div class="pv" id="p-tcr">—</div>
@@ -119,7 +121,7 @@
     </div>
 
     <div class="g3">
-      <div><label data-i18n="log.ic">平均來回次數（IC）</label><input type="number" id="ic" value="2" step="0.1" min="1" oninput="update()"></div>
+      <div><label data-i18n="log.ic">平均來回次數（IC）</label><input type="number" id="ic" value="2" step="0.1" min="1" oninput="update()"><div class="field-help" data-i18n="help.ic"></div></div>
       <div class="preview-box">
         <div class="preview-label" data-i18n="log.p.ic">IC 狀態（目標 &lt;3）</div>
         <div class="pv" id="p-ic">—</div>
@@ -128,8 +130,8 @@
     </div>
 
     <div class="g3">
-      <div><label data-i18n="log.lines_gen">Claude 產出行數</label><input type="number" id="lines_gen" value="100" min="1" oninput="update()"></div>
-      <div><label data-i18n="log.lines_kept">最終保留行數</label><input type="number" id="lines_kept" value="80" min="0" oninput="update()"></div>
+      <div><label data-i18n="log.lines_gen">Claude 產出行數</label><input type="number" id="lines_gen" value="100" min="1" oninput="update()"><div class="field-help" data-i18n="help.lines_gen"></div></div>
+      <div><label data-i18n="log.lines_kept">最終保留行數</label><input type="number" id="lines_kept" value="80" min="0" oninput="update()"><div class="field-help" data-i18n="help.lines_kept"></div></div>
       <div class="preview-box">
         <div class="preview-label" data-i18n="log.p.car">CAR（目標 &gt;60%）</div>
         <div class="pv" id="p-car">—</div>
@@ -137,8 +139,8 @@
     </div>
 
     <div class="g3">
-      <div><label data-i18n="log.ttwc_claude">Claude 完成時間（分）</label><input type="number" id="ttwc_claude" value="15" step="0.5" min="0" oninput="update()"></div>
-      <div><label data-i18n="log.ttwc_manual">手寫估計時間（分）</label><input type="number" id="ttwc_manual" value="40" step="0.5" min="1" oninput="update()"></div>
+      <div><label data-i18n="log.ttwc_claude">Claude 完成時間（分）</label><input type="number" id="ttwc_claude" value="15" step="0.5" min="0" oninput="update()"><div class="field-help" data-i18n="help.ttwc_claude"></div></div>
+      <div><label data-i18n="log.ttwc_manual">手寫估計時間（分）</label><input type="number" id="ttwc_manual" value="40" step="0.5" min="1" oninput="update()"><div class="field-help" data-i18n="help.ttwc_manual"></div></div>
       <div class="preview-box">
         <div class="preview-label" data-i18n="log.p.ttwc">TTWC（目標 &lt;50%）</div>
         <div class="pv" id="p-ttwc">—</div>
@@ -162,16 +164,16 @@
     </div>
     <div id="pge-fields" style="display:none;margin-top:1rem">
       <div class="g3">
-        <div><label data-i18n="log.plan_total">Planner 步驟總數</label><input type="number" id="plan_total" value="5" min="1" oninput="update()"></div>
-        <div><label data-i18n="log.plan_adopted">Generator 採用步驟數</label><input type="number" id="plan_adopted" value="5" min="0" oninput="update()"></div>
+        <div><label data-i18n="log.plan_total">Planner 步驟總數</label><input type="number" id="plan_total" value="5" min="1" oninput="update()"><div class="field-help" data-i18n="help.plan_total"></div></div>
+        <div><label data-i18n="log.plan_adopted">Generator 採用步驟數</label><input type="number" id="plan_adopted" value="5" min="0" oninput="update()"><div class="field-help" data-i18n="help.plan_adopted"></div></div>
         <div class="preview-box">
           <div class="preview-label" data-i18n="log.p.pa">PA — Plan Accuracy</div>
           <div class="pv c-pass" id="p-pa">—</div>
         </div>
       </div>
       <div class="g3">
-        <div><label data-i18n="log.eval_caught">Evaluator 抓到的問題</label><input type="number" id="eval_caught" value="0" min="0" oninput="update()"></div>
-        <div><label data-i18n="log.eval_total">最終總問題數</label><input type="number" id="eval_total" value="0" min="0" oninput="update()"></div>
+        <div><label data-i18n="log.eval_caught">Evaluator 抓到的問題</label><input type="number" id="eval_caught" value="0" min="0" oninput="update()"><div class="field-help" data-i18n="help.eval_caught"></div></div>
+        <div><label data-i18n="log.eval_total">最終總問題數</label><input type="number" id="eval_total" value="0" min="0" oninput="update()"><div class="field-help" data-i18n="help.eval_total"></div></div>
         <div class="preview-box">
           <div class="preview-label" data-i18n="log.p.ecr">ECR — Catch Rate</div>
           <div class="pv c-pass" id="p-ecr">—</div>

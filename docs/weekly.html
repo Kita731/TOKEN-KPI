@@ -63,6 +63,8 @@
     .flash { background: #16a34a18; border: 1px solid #16a34a30; color: var(--pass); padding: .7rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .875rem; display: flex; align-items: center; gap: .5rem; }
     .empty { text-align: center; padding: 1.5rem; color: var(--muted); }
 
+    .field-help { font-size:.71rem; color:var(--muted); margin-top:.28rem; line-height:1.55; white-space:pre-line; }
+
     @media (max-width: 560px) { .g3 { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
@@ -110,14 +112,17 @@
         <div>
           <label data-i18n="weekly.bir">BIR — bugs / 1000 行</label>
           <input type="number" id="bir" data-i18n="weekly.bir.ph" data-i18n-attr="placeholder" placeholder="例：2.5" step="0.1" min="0">
+          <div class="field-help" data-i18n="help.bir"></div>
         </div>
         <div>
-          <label data-i18n="weekly.rr">RR — 重構比例</label>
+          <label data-i18n="weekly.rr">RR — 重構率</label>
           <input type="number" id="rr" data-i18n="weekly.rr.ph" data-i18n-attr="placeholder" placeholder="0.0 ~ 1.0" step="0.01" min="0" max="1">
+          <div class="field-help" data-i18n="help.rr"></div>
         </div>
         <div>
-          <label data-i18n="weekly.ce">CE — Context Efficiency</label>
+          <label data-i18n="weekly.ce">CE — Context 效率</label>
           <input type="number" id="ce" data-i18n="weekly.ce.ph" data-i18n-attr="placeholder" placeholder="0.0 ~ 1.0" step="0.01" min="0" max="1">
+          <div class="field-help" data-i18n="help.ce"></div>
         </div>
       </div>
       <div style="margin-bottom:1rem">

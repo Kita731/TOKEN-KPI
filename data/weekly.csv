@@ -1,0 +1,2 @@
+week_start,week_end,total_sessions,bugs_per_1000_lines,bir,rework_rate,rr,prompt_cache_hit_rate,context_efficiency,ce,notes
+2026-04-14,2026-04-17,3,2.1,2.1,0.15,0.15,0.65,0.70,0.70,初始範例資料

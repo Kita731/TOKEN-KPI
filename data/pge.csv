@@ -1,0 +1,2 @@
+date,session_id,plan_steps_total,plan_steps_adopted,pa,issues_caught_by_evaluator,total_final_issues,ecr,handoff_loss_count,hl,notes
+2026-04-17,example-001,8,7,0.875,5,6,0.833,1,1,初始範例資料

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>記錄 Session — TOKEN KPI</title>
+  <title>TOKEN KPI — Log</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
     :root {
@@ -11,280 +11,220 @@
       --text: #dde2f0; --muted: #5a6488; --accent: #7c6af7;
       --pass: #4ade80; --warn: #fbbf24; --fail: #f87171;
     }
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
     body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; margin: 0; }
     a { color: var(--accent); text-decoration: none; }
 
-    nav { background: var(--card); border-bottom: 1px solid var(--border); padding: .75rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; position: sticky; top: 0; z-index: 100; }
+    nav { background: var(--card); border-bottom: 1px solid var(--border); padding: .75rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; position: sticky; top: 0; z-index: 100; }
     .brand { font-weight: 700; font-size: 1rem; color: var(--accent); letter-spacing: .04em; }
-    .brand i { margin-right: .4rem; }
-    .nav-links { display: flex; gap: .25rem; }
-    .nav-links a { padding: .4rem .75rem; border-radius: 6px; font-size: .875rem; color: var(--muted); transition: all .15s; }
+    .nav-links { display: flex; gap: .2rem; flex: 1; }
+    .nav-links a { padding: .4rem .7rem; border-radius: 6px; font-size: .875rem; color: var(--muted); transition: all .15s; display: flex; align-items: center; gap: .35rem; }
     .nav-links a:hover, .nav-links a.active { background: #1e2235; color: var(--text); }
+    .btn { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .8rem; border-radius: 7px; font-size: .8rem; border: 1px solid transparent; cursor: pointer; font-weight: 500; transition: all .15s; background: transparent; }
+    .btn-ghost { color: var(--muted); border-color: var(--border); }
+    .btn-ghost:hover { color: var(--text); background: #1e2235; }
+    .btn-lang { color: var(--muted); border-color: var(--border); font-weight: 600; min-width: 36px; justify-content: center; }
+    .btn-lang:hover { color: var(--accent); border-color: var(--accent); background: #7c6af710; }
+    .nav-end { display: flex; gap: .4rem; margin-left: auto; }
 
     .page { max-width: 720px; margin: 0 auto; padding: 1.5rem; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: .75rem; }
-    .sec { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 1rem; }
+    .sec { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 1rem; }
 
-    .grid { display: grid; gap: .75rem; }
-    .grid-2 { grid-template-columns: 1fr 1fr; }
-    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .75rem; margin-bottom: .75rem; }
 
     label { font-size: .8rem; color: var(--muted); display: block; margin-bottom: .35rem; }
-    input[type=text], input[type=number], input[type=date], textarea, select {
+    input[type=text], input[type=number], input[type=date], textarea {
       width: 100%; background: #0d0f18; border: 1px solid var(--border);
       color: var(--text); padding: .55rem .75rem; border-radius: 8px; font-size: .875rem;
-      transition: border-color .15s; outline: none;
+      transition: border-color .15s; outline: none; font-family: inherit;
     }
-    input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #7c6af718; }
-    textarea { resize: vertical; min-height: 60px; }
+    input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #7c6af718; }
+    textarea { resize: vertical; min-height: 58px; }
 
     .preview-box { background: #0d0f18; border: 1px solid var(--border); border-radius: 8px; padding: .55rem .75rem; }
-    .preview-label { font-size: .7rem; color: var(--muted); margin-bottom: .1rem; }
-    .preview-val { font-size: 1.5rem; font-weight: 700; }
-    .c-pass { color: var(--pass); }
-    .c-warn { color: var(--warn); }
-    .c-fail { color: var(--fail); }
+    .preview-label { font-size: .68rem; color: var(--muted); margin-bottom: .15rem; }
+    .pv { font-size: 1.45rem; font-weight: 700; }
+    .c-pass { color: var(--pass); } .c-warn { color: var(--warn); } .c-fail { color: var(--fail); }
 
-    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.25rem; border-radius: 8px; font-size: .875rem; border: none; cursor: pointer; font-weight: 600; transition: all .15s; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: #6b58e8; }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-    .btn-ghost:hover { color: var(--text); background: var(--card); }
+    .btn-submit { background: var(--accent); color: #fff; border-color: var(--accent); padding: .55rem 1.3rem; font-size: .875rem; font-weight: 600; border-radius: 8px; }
+    .btn-submit:hover { background: #6b58e8; }
 
     .toggle-row { display: flex; align-items: center; justify-content: space-between; }
-    .switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+    .switch { position: relative; display: inline-block; width: 38px; height: 22px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 22px; transition: .2s; }
-    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .2s; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #e2e8f0; border-radius: 50%; transition: .2s; }
     input:checked + .slider { background: var(--accent); }
     input:checked + .slider:before { transform: translateX(16px); }
 
     @media (max-width: 520px) {
-      .grid-3 { grid-template-columns: 1fr 1fr; }
-      .grid-2 { grid-template-columns: 1fr; }
+      .g3 { grid-template-columns: 1fr 1fr; }
+      .g2 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
 <nav>
-  <span class="brand"><i class="bi bi-graph-up-arrow"></i>TOKEN KPI</span>
+  <span class="brand"><i class="bi bi-graph-up-arrow"></i> TOKEN KPI</span>
   <div class="nav-links">
-    <a href="index.html"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
-    <a href="log.html" class="active"><i class="bi bi-plus-circle"></i> <span>記錄</span></a>
-    <a href="weekly.html"><i class="bi bi-calendar-week"></i> <span>週報</span></a>
+    <a href="index.html"><i class="bi bi-speedometer2"></i><span data-i18n="nav.dashboard">Dashboard</span></a>
+    <a href="log.html" class="active"><i class="bi bi-plus-circle"></i><span data-i18n="nav.log">記錄</span></a>
+    <a href="weekly.html"><i class="bi bi-calendar-week"></i><span data-i18n="nav.weekly">週報</span></a>
+  </div>
+  <div class="nav-end">
+    <button class="btn btn-lang" onclick="I18N.toggleLang()"><span data-i18n="nav.lang">EN</span></button>
   </div>
 </nav>
 
 <div class="page">
   <h1 style="font-size:1.25rem;font-weight:700;margin:0 0 1.25rem">
-    <i class="bi bi-plus-circle" style="color:var(--accent);margin-right:.5rem"></i>記錄 Session
+    <i class="bi bi-plus-circle" style="color:var(--accent);margin-right:.5rem"></i><span data-i18n="log.title">記錄 Session</span>
   </h1>
 
-  <!-- 基本資訊 -->
+  <!-- Basic Info -->
   <div class="card">
-    <div class="sec">基本資訊</div>
-    <div class="grid grid-2">
+    <div class="sec" data-i18n="log.basic">基本資訊</div>
+    <div class="g2">
       <div>
-        <label>專案名稱</label>
-        <input type="text" id="project" placeholder="例：TOKEN-KPI" required>
+        <label data-i18n="log.project.label">專案名稱</label>
+        <input type="text" id="project" data-i18n="log.project.ph" data-i18n-attr="placeholder" placeholder="例：TOKEN-KPI">
       </div>
       <div>
-        <label>日期</label>
+        <label data-i18n="log.date">日期</label>
         <input type="date" id="date">
       </div>
     </div>
   </div>
 
-  <!-- 核心指標 -->
+  <!-- Core Metrics -->
   <div class="card">
-    <div class="sec">核心指標</div>
+    <div class="sec" data-i18n="log.core">核心指標</div>
 
-    <!-- TCR -->
-    <div class="grid grid-3" style="margin-bottom:.75rem">
-      <div>
-        <label>總任務數</label>
-        <input type="number" id="total_tasks" value="5" min="1" oninput="update()">
-      </div>
-      <div>
-        <label>一次通過數</label>
-        <input type="number" id="passed" value="4" min="0" oninput="update()">
-      </div>
-      <div>
-        <div class="preview-box">
-          <div class="preview-label">TCR（目標 &gt;70%）</div>
-          <div class="preview-val" id="p-tcr">—</div>
-        </div>
+    <div class="g3">
+      <div><label data-i18n="log.total">總任務數</label><input type="number" id="total_tasks" value="5" min="1" oninput="update()"></div>
+      <div><label data-i18n="log.passed">一次通過數</label><input type="number" id="passed" value="4" min="0" oninput="update()"></div>
+      <div class="preview-box">
+        <div class="preview-label" data-i18n="log.p.tcr">TCR（目標 &gt;70%）</div>
+        <div class="pv" id="p-tcr">—</div>
       </div>
     </div>
 
-    <!-- IC -->
-    <div class="grid grid-3" style="margin-bottom:.75rem">
-      <div>
-        <label>平均來回次數（IC）</label>
-        <input type="number" id="ic" value="2" step="0.1" min="1" oninput="update()">
-      </div>
-      <div>
-        <div class="preview-box">
-          <div class="preview-label">IC 狀態（目標 &lt;3）</div>
-          <div class="preview-val" id="p-ic">—</div>
-        </div>
+    <div class="g3">
+      <div><label data-i18n="log.ic">平均來回次數（IC）</label><input type="number" id="ic" value="2" step="0.1" min="1" oninput="update()"></div>
+      <div class="preview-box">
+        <div class="preview-label" data-i18n="log.p.ic">IC 狀態（目標 &lt;3）</div>
+        <div class="pv" id="p-ic">—</div>
       </div>
       <div></div>
     </div>
 
-    <!-- CAR -->
-    <div class="grid grid-3" style="margin-bottom:.75rem">
-      <div>
-        <label>Claude 產出行數</label>
-        <input type="number" id="lines_gen" value="100" min="1" oninput="update()">
-      </div>
-      <div>
-        <label>最終保留行數</label>
-        <input type="number" id="lines_kept" value="80" min="0" oninput="update()">
-      </div>
-      <div>
-        <div class="preview-box">
-          <div class="preview-label">CAR（目標 &gt;60%）</div>
-          <div class="preview-val" id="p-car">—</div>
-        </div>
+    <div class="g3">
+      <div><label data-i18n="log.lines_gen">Claude 產出行數</label><input type="number" id="lines_gen" value="100" min="1" oninput="update()"></div>
+      <div><label data-i18n="log.lines_kept">最終保留行數</label><input type="number" id="lines_kept" value="80" min="0" oninput="update()"></div>
+      <div class="preview-box">
+        <div class="preview-label" data-i18n="log.p.car">CAR（目標 &gt;60%）</div>
+        <div class="pv" id="p-car">—</div>
       </div>
     </div>
 
-    <!-- TTWC -->
-    <div class="grid grid-3" style="margin-bottom:.75rem">
-      <div>
-        <label>Claude 完成時間（分）</label>
-        <input type="number" id="ttwc_claude" value="15" step="0.5" min="0" oninput="update()">
-      </div>
-      <div>
-        <label>手寫估計時間（分）</label>
-        <input type="number" id="ttwc_manual" value="40" step="0.5" min="1" oninput="update()">
-      </div>
-      <div>
-        <div class="preview-box">
-          <div class="preview-label">TTWC（目標 &lt;50%）</div>
-          <div class="preview-val" id="p-ttwc">—</div>
-        </div>
+    <div class="g3">
+      <div><label data-i18n="log.ttwc_claude">Claude 完成時間（分）</label><input type="number" id="ttwc_claude" value="15" step="0.5" min="0" oninput="update()"></div>
+      <div><label data-i18n="log.ttwc_manual">手寫估計時間（分）</label><input type="number" id="ttwc_manual" value="40" step="0.5" min="1" oninput="update()"></div>
+      <div class="preview-box">
+        <div class="preview-label" data-i18n="log.p.ttwc">TTWC（目標 &lt;50%）</div>
+        <div class="pv" id="p-ttwc">—</div>
       </div>
     </div>
 
     <div>
-      <label>備註</label>
-      <textarea id="notes" placeholder="（選填）這次 session 的觀察…"></textarea>
+      <label data-i18n="log.notes.label">備註</label>
+      <textarea id="notes" data-i18n="log.notes.ph" data-i18n-attr="placeholder" placeholder="（選填）這次 session 的觀察…"></textarea>
     </div>
   </div>
 
   <!-- PGE -->
   <div class="card">
-    <div class="toggle-row" style="margin-bottom:0" id="pge-header">
-      <div class="sec" style="margin-bottom:0">PGE 流程指標（選填）</div>
+    <div class="toggle-row">
+      <div class="sec" style="margin-bottom:0" data-i18n="log.pge">PGE 流程指標（選填）</div>
       <label class="switch">
         <input type="checkbox" id="use_pge" onchange="togglePGE()">
         <span class="slider"></span>
       </label>
     </div>
     <div id="pge-fields" style="display:none;margin-top:1rem">
-      <div class="grid grid-3" style="margin-bottom:.75rem">
-        <div>
-          <label>Planner 步驟總數</label>
-          <input type="number" id="plan_total" value="5" min="1" oninput="update()">
-        </div>
-        <div>
-          <label>Generator 採用步驟數</label>
-          <input type="number" id="plan_adopted" value="5" min="0" oninput="update()">
-        </div>
-        <div>
-          <div class="preview-box">
-            <div class="preview-label">PA — Plan Accuracy</div>
-            <div class="preview-val" id="p-pa">—</div>
-          </div>
+      <div class="g3">
+        <div><label data-i18n="log.plan_total">Planner 步驟總數</label><input type="number" id="plan_total" value="5" min="1" oninput="update()"></div>
+        <div><label data-i18n="log.plan_adopted">Generator 採用步驟數</label><input type="number" id="plan_adopted" value="5" min="0" oninput="update()"></div>
+        <div class="preview-box">
+          <div class="preview-label" data-i18n="log.p.pa">PA — Plan Accuracy</div>
+          <div class="pv c-pass" id="p-pa">—</div>
         </div>
       </div>
-      <div class="grid grid-3" style="margin-bottom:.75rem">
-        <div>
-          <label>Evaluator 抓到的問題</label>
-          <input type="number" id="eval_caught" value="0" min="0" oninput="update()">
-        </div>
-        <div>
-          <label>最終總問題數</label>
-          <input type="number" id="eval_total" value="0" min="0" oninput="update()">
-        </div>
-        <div>
-          <div class="preview-box">
-            <div class="preview-label">ECR — Catch Rate</div>
-            <div class="preview-val" id="p-ecr">—</div>
-          </div>
+      <div class="g3">
+        <div><label data-i18n="log.eval_caught">Evaluator 抓到的問題</label><input type="number" id="eval_caught" value="0" min="0" oninput="update()"></div>
+        <div><label data-i18n="log.eval_total">最終總問題數</label><input type="number" id="eval_total" value="0" min="0" oninput="update()"></div>
+        <div class="preview-box">
+          <div class="preview-label" data-i18n="log.p.ecr">ECR — Catch Rate</div>
+          <div class="pv c-pass" id="p-ecr">—</div>
         </div>
       </div>
-      <div class="grid grid-2">
+      <div class="g2">
+        <div><label data-i18n="log.hl">Handoff Loss 次數</label><input type="number" id="hl" value="0" min="0"></div>
         <div>
-          <label>Handoff Loss 次數</label>
-          <input type="number" id="hl" value="0" min="0">
-        </div>
-        <div>
-          <label>PGE 備註</label>
-          <input type="text" id="pge_notes" placeholder="（選填）">
+          <label data-i18n="log.pge_notes">PGE 備註</label>
+          <input type="text" id="pge_notes" data-i18n="log.pge_notes.ph" data-i18n-attr="placeholder" placeholder="（選填）">
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Actions -->
   <div style="display:flex;gap:.75rem;align-items:center">
-    <button class="btn btn-primary" onclick="save()">
-      <i class="bi bi-check-lg"></i> 儲存 Session
+    <button class="btn btn-submit" onclick="save()">
+      <i class="bi bi-check-lg"></i> <span data-i18n="log.save">儲存 Session</span>
     </button>
-    <a href="index.html" class="btn btn-ghost">取消</a>
+    <a href="index.html" class="btn btn-ghost" data-i18n="log.cancel">取消</a>
   </div>
 </div>
 
 <script src="js/kpi.js"></script>
+<script src="js/i18n.js"></script>
 <script>
 function pct(n, d) { return d > 0 ? n / d : 0; }
 
 function colorClass(val, target, invert) {
-  if (!invert) {
-    if (val >= target)       return 'c-pass';
-    if (val >= target * .85) return 'c-warn';
-    return 'c-fail';
-  } else {
-    if (val <= target)       return 'c-pass';
-    if (val <= target * 1.4) return 'c-warn';
-    return 'c-fail';
-  }
+  if (!invert) return val >= target ? 'c-pass' : val >= target*.85 ? 'c-warn' : 'c-fail';
+  return val <= target ? 'c-pass' : val <= target*1.4 ? 'c-warn' : 'c-fail';
 }
 
-function setPreview(id, val, target, invert, fmt) {
+function setPrev(id, val, target, invert, fmt) {
   const el = document.getElementById(id);
   el.textContent = fmt(val);
-  el.className = 'preview-val ' + colorClass(val, target, invert);
+  el.className = 'pv ' + colorClass(val, target, invert);
 }
 
 function update() {
-  const total  = +document.getElementById('total_tasks').value  || 1;
-  const passed = +document.getElementById('passed').value       || 0;
-  const ic     = +document.getElementById('ic').value           || 0;
-  const gen    = +document.getElementById('lines_gen').value    || 1;
-  const kept   = +document.getElementById('lines_kept').value   || 0;
-  const claude = +document.getElementById('ttwc_claude').value  || 0;
-  const manual = +document.getElementById('ttwc_manual').value  || 1;
+  const total  = +document.getElementById('total_tasks').value || 1;
+  const passed = +document.getElementById('passed').value      || 0;
+  const ic     = +document.getElementById('ic').value          || 0;
+  const gen    = +document.getElementById('lines_gen').value   || 1;
+  const kept   = +document.getElementById('lines_kept').value  || 0;
+  const claude = +document.getElementById('ttwc_claude').value || 0;
+  const manual = +document.getElementById('ttwc_manual').value || 1;
 
-  setPreview('p-tcr',  pct(passed, total),   .70, false, v => (v*100).toFixed(1)+'%');
-  setPreview('p-ic',   ic,                   3.0, true,  v => v.toFixed(1));
-  setPreview('p-car',  pct(kept, gen),        .60, false, v => (v*100).toFixed(1)+'%');
-  setPreview('p-ttwc', pct(claude, manual),   .50, true,  v => (v*100).toFixed(1)+'%');
+  setPrev('p-tcr',  pct(passed,total),   .70, false, v => (v*100).toFixed(1)+'%');
+  setPrev('p-ic',   ic,                  3.0, true,  v => v.toFixed(1));
+  setPrev('p-car',  pct(kept,gen),        .60, false, v => (v*100).toFixed(1)+'%');
+  setPrev('p-ttwc', pct(claude,manual),   .50, true,  v => (v*100).toFixed(1)+'%');
 
   const pt = +document.getElementById('plan_total').value   || 1;
   const pa = +document.getElementById('plan_adopted').value || 0;
   const ec = +document.getElementById('eval_caught').value  || 0;
   const et = +document.getElementById('eval_total').value   || 0;
-
   document.getElementById('p-pa').textContent  = (pct(pa,pt)*100).toFixed(1)+'%';
-  document.getElementById('p-pa').className    = 'preview-val c-pass';
   document.getElementById('p-ecr').textContent = et > 0 ? (pct(ec,et)*100).toFixed(1)+'%' : 'N/A';
-  document.getElementById('p-ecr').className   = 'preview-val c-pass';
 }
 
 function togglePGE() {
@@ -296,7 +236,7 @@ function save() {
   const project = document.getElementById('project').value.trim();
   if (!project) { document.getElementById('project').focus(); return; }
 
-  const raw = {
+  const session = KPI.addSession({
     date:                     document.getElementById('date').value,
     project,
     total_tasks:              document.getElementById('total_tasks').value,
@@ -307,9 +247,7 @@ function save() {
     ttwc_claude_min:          document.getElementById('ttwc_claude').value,
     ttwc_manual_estimate_min: document.getElementById('ttwc_manual').value,
     notes:                    document.getElementById('notes').value,
-  };
-
-  const session = KPI.addSession(raw);
+  });
 
   if (document.getElementById('use_pge').checked) {
     KPI.addPGE({
@@ -324,14 +262,16 @@ function save() {
     });
   }
 
-  sessionStorage.setItem('kpi_flash',
-    `Session ${session.session_id} 已記錄 — TCR ${(session.tcr*100).toFixed(0)}%  IC ${session.ic}  CAR ${(session.car*100).toFixed(0)}%  TTWC ${(session.ttwc_ratio*100).toFixed(0)}%`
-  );
+  const msg = I18N.lang === 'zh'
+    ? `Session ${session.session_id} 已記錄 — TCR ${(session.tcr*100).toFixed(0)}%  IC ${session.ic}  CAR ${(session.car*100).toFixed(0)}%  TTWC ${(session.ttwc_ratio*100).toFixed(0)}%`
+    : `Session ${session.session_id} saved — TCR ${(session.tcr*100).toFixed(0)}%  IC ${session.ic}  CAR ${(session.car*100).toFixed(0)}%  TTWC ${(session.ttwc_ratio*100).toFixed(0)}%`;
+
+  sessionStorage.setItem('kpi_flash', msg);
   location.href = 'index.html';
 }
 
-// Init
 document.getElementById('date').value = KPI.today();
+I18N.init();
 update();
 </script>
 </body>

@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard — TOKEN KPI</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>TOKEN KPI</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
     :root {
@@ -12,69 +11,61 @@
       --text: #dde2f0; --muted: #5a6488; --accent: #7c6af7;
       --pass: #4ade80; --warn: #fbbf24; --fail: #f87171;
     }
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
     body { background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; margin: 0; }
     a { color: var(--accent); text-decoration: none; }
 
-    /* Nav */
-    nav { background: var(--card); border-bottom: 1px solid var(--border); padding: .75rem 1.5rem; display: flex; align-items: center; gap: 1.5rem; position: sticky; top: 0; z-index: 100; }
+    nav { background: var(--card); border-bottom: 1px solid var(--border); padding: .75rem 1.5rem; display: flex; align-items: center; gap: 1.25rem; position: sticky; top: 0; z-index: 100; }
     .brand { font-weight: 700; font-size: 1rem; color: var(--accent); letter-spacing: .04em; white-space: nowrap; }
-    .brand i { margin-right: .4rem; }
-    .nav-links { display: flex; gap: .25rem; flex: 1; }
-    .nav-links a { padding: .4rem .75rem; border-radius: 6px; font-size: .875rem; color: var(--muted); transition: all .15s; }
+    .nav-links { display: flex; gap: .2rem; flex: 1; }
+    .nav-links a { padding: .4rem .7rem; border-radius: 6px; font-size: .875rem; color: var(--muted); transition: all .15s; display: flex; align-items: center; gap: .35rem; }
     .nav-links a:hover, .nav-links a.active { background: #1e2235; color: var(--text); }
-    .nav-actions { display: flex; gap: .5rem; margin-left: auto; }
+    .nav-end { display: flex; gap: .4rem; margin-left: auto; }
+    .btn { display: inline-flex; align-items: center; gap: .35rem; padding: .4rem .8rem; border-radius: 7px; font-size: .8rem; border: 1px solid transparent; cursor: pointer; font-weight: 500; transition: all .15s; background: transparent; }
+    .btn-ghost { color: var(--muted); border-color: var(--border); }
+    .btn-ghost:hover { color: var(--text); background: #1e2235; }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: #6b58e8; }
+    .btn-lang { color: var(--muted); border-color: var(--border); font-weight: 600; min-width: 36px; justify-content: center; }
+    .btn-lang:hover { color: var(--accent); border-color: var(--accent); background: #7c6af710; }
 
-    /* Cards */
+    .page { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
-    .card-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: .5rem; }
+    .card-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: .5rem; }
     .metric-big { font-size: 2.4rem; font-weight: 700; line-height: 1; }
-    .pill { display: inline-block; font-size: .7rem; padding: .2rem .6rem; border-radius: 999px; font-weight: 600; }
+    .pill { display: inline-block; font-size: .68rem; padding: .2rem .55rem; border-radius: 999px; font-weight: 600; }
     .pill-pass { background: #16a34a18; color: var(--pass); border: 1px solid #16a34a30; }
     .pill-warn { background: #ca8a0418; color: var(--warn); border: 1px solid #ca8a0430; }
     .pill-fail { background: #dc262618; color: var(--fail); border: 1px solid #dc262630; }
+    .ti-up { color: var(--pass); } .ti-down { color: var(--fail); } .ti-stable { color: var(--muted); }
 
-    /* Trend icon */
-    .ti-up    { color: var(--pass); }
-    .ti-down  { color: var(--fail); }
-    .ti-stable{ color: var(--muted); }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .col-4 { flex: 1 1 calc(25% - .75rem); min-width: 180px; }
+    .sec { font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: .9rem; }
 
-    /* Table */
     table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-    th { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; padding: .6rem .75rem; border-bottom: 1px solid var(--border); font-weight: 500; }
+    th { color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; padding: .55rem .75rem; border-bottom: 1px solid var(--border); font-weight: 500; }
     td { padding: .6rem .75rem; border-bottom: 1px solid #161828; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tbody tr:hover td { background: #161828; }
 
-    /* Section label */
-    .sec { font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 1rem; }
+    select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: .3rem .6rem; border-radius: 6px; font-size: .8rem; cursor: pointer; outline: none; }
+    select:focus { border-color: var(--accent); }
 
-    /* Buttons */
-    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; border-radius: 7px; font-size: .8rem; border: 1px solid transparent; cursor: pointer; font-weight: 500; transition: all .15s; }
-    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .btn-primary:hover { background: #6b58e8; }
-    .btn-ghost { background: transparent; color: var(--muted); border-color: var(--border); }
-    .btn-ghost:hover { color: var(--text); background: var(--card); }
-    .btn-danger { background: transparent; color: var(--fail); border-color: #dc262630; }
-    .btn-danger:hover { background: #dc262610; }
+    .flash { background: #16a34a18; border: 1px solid #16a34a30; color: var(--pass); padding: .7rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .875rem; display: flex; align-items: center; gap: .5rem; }
+    .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
+    .empty-state .big { font-size: 2.5rem; margin-bottom: .5rem; }
 
-    /* Layout */
-    .page { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
-    .row { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .col-4 { flex: 1 1 calc(25% - .75rem); min-width: 180px; }
-    .col-12 { flex: 1 1 100%; }
-    .col-8 { flex: 2 1 calc(60% - .5rem); min-width: 300px; }
-
-    /* Flash */
-    .flash { background: #16a34a18; border: 1px solid #16a34a30; color: var(--pass); padding: .75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .875rem; display: flex; align-items: center; gap: .5rem; }
-
-    /* Empty state */
-    .empty { text-align: center; padding: 2.5rem; color: var(--muted); }
-    .empty .big { font-size: 2.5rem; margin-bottom: .5rem; }
-
-    /* Select */
-    select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: .3rem .6rem; border-radius: 6px; font-size: .8rem; cursor: pointer; }
-    select:focus { outline: none; border-color: var(--accent); }
+    /* Import Modal */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: #00000090; z-index: 200; align-items: center; justify-content: center; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; width: 400px; max-width: 92vw; }
+    .modal-title { font-weight: 600; margin-bottom: 1.1rem; }
+    .form-group { margin-bottom: .9rem; }
+    .form-group label { font-size: .78rem; color: var(--muted); display: block; margin-bottom: .35rem; }
+    .form-group select, .form-group input[type=file] { width: 100%; font-size: .85rem; color: var(--text); }
+    .form-note { font-size: .73rem; color: var(--muted); margin-bottom: 1rem; }
+    .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; }
 
     @media (max-width: 640px) {
       .col-4 { flex: 1 1 calc(50% - .5rem); }
@@ -85,92 +76,92 @@
 <body>
 
 <nav>
-  <span class="brand"><i class="bi bi-graph-up-arrow"></i>TOKEN KPI</span>
+  <span class="brand"><i class="bi bi-graph-up-arrow"></i> TOKEN KPI</span>
   <div class="nav-links">
-    <a href="index.html" class="active"><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a>
-    <a href="log.html"><i class="bi bi-plus-circle"></i> <span>記錄</span></a>
-    <a href="weekly.html"><i class="bi bi-calendar-week"></i> <span>週報</span></a>
+    <a href="index.html" class="active"><i class="bi bi-speedometer2"></i><span data-i18n="nav.dashboard">Dashboard</span></a>
+    <a href="log.html"><i class="bi bi-plus-circle"></i><span data-i18n="nav.log">記錄</span></a>
+    <a href="weekly.html"><i class="bi bi-calendar-week"></i><span data-i18n="nav.weekly">週報</span></a>
   </div>
-  <div class="nav-actions">
-    <button class="btn btn-ghost" onclick="openImport()"><i class="bi bi-upload"></i> 匯入</button>
-    <button class="btn btn-ghost" onclick="KPI.exportCSV('sessions')"><i class="bi bi-download"></i> 匯出</button>
+  <div class="nav-end">
+    <button class="btn btn-ghost" onclick="openImport()"><i class="bi bi-upload"></i><span data-i18n="nav.import">匯入</span></button>
+    <button class="btn btn-ghost" onclick="KPI.exportCSV('sessions')"><i class="bi bi-download"></i><span data-i18n="nav.export">匯出</span></button>
+    <button class="btn btn-lang" onclick="I18N.toggleLang()" title="Switch Language"><span data-i18n="nav.lang">EN</span></button>
   </div>
 </nav>
 
 <div class="page">
   <div id="flash"></div>
 
-  <!-- Header -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-    <h1 style="font-size:1.25rem;font-weight:700;margin:0">Dashboard</h1>
+    <h1 style="font-size:1.25rem;font-weight:700;margin:0" data-i18n="dash.title">Dashboard</h1>
     <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--muted)">
-      近
+      <span data-i18n="dash.last">近</span>
       <select id="windowSel" onchange="refresh()">
         <option value="10" selected>10</option>
         <option value="20">20</option>
         <option value="30">30</option>
       </select>
-      筆 sessions
+      <span data-i18n="dash.sessions">筆 sessions</span>
     </div>
   </div>
 
   <!-- Health Cards -->
-  <div class="row" style="margin-bottom:1rem" id="healthCards">
-    <div class="col-4 card" id="card-tcr">
-      <div class="card-label">TCR — Task Completion Rate</div>
+  <div class="row" style="margin-bottom:1rem">
+    <div class="col-4 card">
+      <div class="card-label" data-i18n="metric.tcr.label">TCR — Task Completion Rate</div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-tcr">—</div>
         <div id="t-tcr" style="margin-bottom:.25rem"></div>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
         <span class="pill" id="b-tcr">—</span>
-        <span style="font-size:.7rem;color:var(--muted)">目標 > 70%</span>
+        <span style="font-size:.68rem;color:var(--muted)" data-i18n="metric.tcr.target">目標 > 70%</span>
       </div>
     </div>
-    <div class="col-4 card" id="card-ic">
-      <div class="card-label">IC — Iteration Count</div>
+    <div class="col-4 card">
+      <div class="card-label" data-i18n="metric.ic.label">IC — Iteration Count</div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-ic">—</div>
         <div id="t-ic" style="margin-bottom:.25rem"></div>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
         <span class="pill" id="b-ic">—</span>
-        <span style="font-size:.7rem;color:var(--muted)">目標 < 3</span>
+        <span style="font-size:.68rem;color:var(--muted)" data-i18n="metric.ic.target">目標 < 3</span>
       </div>
     </div>
-    <div class="col-4 card" id="card-car">
-      <div class="card-label">CAR — Code Acceptance Rate</div>
+    <div class="col-4 card">
+      <div class="card-label" data-i18n="metric.car.label">CAR — Code Acceptance Rate</div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-car">—</div>
         <div id="t-car" style="margin-bottom:.25rem"></div>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
         <span class="pill" id="b-car">—</span>
-        <span style="font-size:.7rem;color:var(--muted)">目標 > 60%</span>
+        <span style="font-size:.68rem;color:var(--muted)" data-i18n="metric.car.target">目標 > 60%</span>
       </div>
     </div>
-    <div class="col-4 card" id="card-ttwc">
-      <div class="card-label">TTWC — Time-to-Working-Code</div>
+    <div class="col-4 card">
+      <div class="card-label" data-i18n="metric.ttwc.label">TTWC — Time-to-Working-Code</div>
       <div style="display:flex;align-items:flex-end;gap:.5rem;margin-bottom:.4rem">
         <div class="metric-big" id="v-ttwc">—</div>
         <div id="t-ttwc" style="margin-bottom:.25rem"></div>
       </div>
       <div style="display:flex;align-items:center;gap:.5rem">
         <span class="pill" id="b-ttwc">—</span>
-        <span style="font-size:.7rem;color:var(--muted)">目標 < 50%</span>
+        <span style="font-size:.68rem;color:var(--muted)" data-i18n="metric.ttwc.target">目標 < 50%</span>
       </div>
     </div>
   </div>
 
   <!-- Chart -->
-  <div class="card" style="margin-bottom:1rem;padding:1.25rem">
+  <div class="card" style="margin-bottom:1rem">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-      <div class="sec" style="margin-bottom:0">趨勢圖</div>
-      <div style="display:flex;gap:1rem;font-size:.75rem;color:var(--muted)">
-        <span><span style="display:inline-block;width:10px;height:10px;background:#7c6af7;border-radius:2px;margin-right:.3rem"></span>TCR</span>
-        <span><span style="display:inline-block;width:10px;height:10px;background:#f59e0b;border-radius:2px;margin-right:.3rem"></span>IC</span>
-        <span><span style="display:inline-block;width:10px;height:10px;background:#10b981;border-radius:2px;margin-right:.3rem"></span>CAR</span>
-        <span><span style="display:inline-block;width:10px;height:10px;background:#f87171;border-radius:2px;margin-right:.3rem"></span>TTWC</span>
+      <div class="sec" style="margin-bottom:0" data-i18n="dash.trend">趨勢圖</div>
+      <div style="display:flex;gap:.85rem;font-size:.73rem;color:var(--muted)">
+        <span><span style="display:inline-block;width:9px;height:9px;background:#7c6af7;border-radius:2px;margin-right:.3rem"></span>TCR</span>
+        <span><span style="display:inline-block;width:9px;height:9px;background:#f59e0b;border-radius:2px;margin-right:.3rem"></span>IC</span>
+        <span><span style="display:inline-block;width:9px;height:9px;background:#10b981;border-radius:2px;margin-right:.3rem"></span>CAR</span>
+        <span><span style="display:inline-block;width:9px;height:9px;background:#f87171;border-radius:2px;margin-right:.3rem"></span>TTWC</span>
       </div>
     </div>
     <canvas id="chart" height="80"></canvas>
@@ -178,77 +169,73 @@
 
   <!-- Sessions Table -->
   <div class="card">
-    <div class="sec">最近 Sessions</div>
+    <div class="sec" data-i18n="dash.recent">最近 Sessions</div>
     <div style="overflow-x:auto">
-      <table id="sessionTable">
+      <table>
         <thead>
           <tr>
-            <th>日期</th><th>專案</th>
+            <th data-i18n="dash.col.date">日期</th>
+            <th data-i18n="dash.col.project">專案</th>
             <th>TCR</th><th>IC</th><th>CAR</th><th>TTWC</th>
-            <th>備註</th><th></th>
+            <th data-i18n="dash.col.notes">備註</th>
+            <th></th>
           </tr>
         </thead>
-        <tbody id="sessionBody">
-          <tr><td colspan="8"><div class="empty"><div class="big">📊</div>尚無資料<br><a href="log.html" style="color:var(--accent)">記錄第一筆 Session →</a></div></td></tr>
-        </tbody>
+        <tbody id="sessionBody"></tbody>
       </table>
     </div>
   </div>
 </div>
 
 <!-- Import Modal -->
-<div id="importModal" style="display:none;position:fixed;inset:0;background:#00000088;z-index:200;align-items:center;justify-content:center">
-  <div class="card" style="width:400px;max-width:90vw">
-    <div style="font-weight:600;margin-bottom:1rem">匯入 CSV 資料</div>
-    <div style="margin-bottom:.75rem">
-      <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:.4rem">資料類型</label>
-      <select id="importType" style="width:100%">
-        <option value="sessions">Sessions（核心指標）</option>
-        <option value="weekly">Weekly（週報）</option>
-        <option value="pge">PGE（流程指標）</option>
+<div class="modal-backdrop" id="importModal">
+  <div class="modal">
+    <div class="modal-title" data-i18n="dash.import.title">匯入 CSV 資料</div>
+    <div class="form-group">
+      <label data-i18n="dash.import.type">資料類型</label>
+      <select id="importType">
+        <option value="sessions" data-i18n="dash.opt.sessions">Sessions（核心指標）</option>
+        <option value="weekly"   data-i18n="dash.opt.weekly">Weekly（週報）</option>
+        <option value="pge"      data-i18n="dash.opt.pge">PGE（流程指標）</option>
       </select>
     </div>
-    <div style="margin-bottom:1rem">
-      <label style="font-size:.8rem;color:var(--muted);display:block;margin-bottom:.4rem">選擇 CSV 檔案</label>
-      <input type="file" id="importFile" accept=".csv" style="color:var(--text);font-size:.85rem">
+    <div class="form-group">
+      <label data-i18n="dash.import.file">選擇 CSV 檔案</label>
+      <input type="file" id="importFile" accept=".csv">
     </div>
-    <div style="font-size:.75rem;color:var(--muted);margin-bottom:1rem">
-      重複的 session_id / week_start 不會被匯入（merge 模式）
-    </div>
-    <div style="display:flex;gap:.5rem;justify-content:flex-end">
-      <button class="btn btn-ghost" onclick="closeImport()">取消</button>
-      <button class="btn btn-primary" onclick="doImport()"><i class="bi bi-upload"></i> 匯入</button>
+    <div class="form-note" data-i18n="dash.import.note">重複的 session_id 不會被匯入（merge 模式）</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeImport()" data-i18n="dash.import.cancel">取消</button>
+      <button class="btn btn-primary" onclick="doImport()"><i class="bi bi-upload"></i> <span data-i18n="dash.import.btn">匯入</span></button>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="js/kpi.js"></script>
+<script src="js/i18n.js"></script>
 <script>
 let chart = null;
+
 const pillClass = { pass: 'pill-pass', warn: 'pill-warn', fail: 'pill-fail' };
-const pillLabel = { pass: '達標', warn: '注意', fail: '未達標' };
 const trendHTML = {
-  up:     '<i class="bi bi-arrow-up ti-up"   style="font-size:.9rem"></i>',
+  up:     '<i class="bi bi-arrow-up ti-up"    style="font-size:.9rem"></i>',
   down:   '<i class="bi bi-arrow-down ti-down" style="font-size:.9rem"></i>',
-  stable: '<i class="bi bi-dash ti-stable"   style="font-size:.9rem"></i>',
+  stable: '<i class="bi bi-dash ti-stable"    style="font-size:.9rem"></i>',
 };
 
-function rowColor(val, target, invert) {
-  const ok = invert ? val <= target : val >= target;
-  return ok ? '' : `color:var(--fail)`;
-}
+function onLangChange() { refresh(); }
 
 function loadHealth(n) {
   const data = KPI.getHealth(n);
-  const keys = { tcr: [true, false], ic: [false, true], car: [true, false], ttwc: [true, true] };
-  for (const [key, [isPercent, invert]] of Object.entries(keys)) {
+  const conf = { tcr:[true,false], ic:[false,true], car:[true,false], ttwc:[true,true] };
+  for (const [key, [isPct]] of Object.entries(conf)) {
     const m = data.metrics[key];
     if (!m) continue;
-    document.getElementById(`v-${key}`).textContent = isPercent ? (m.value * 100).toFixed(1) + '%' : m.value.toFixed(1);
+    document.getElementById(`v-${key}`).textContent = isPct ? (m.value*100).toFixed(1)+'%' : m.value.toFixed(1);
     const b = document.getElementById(`b-${key}`);
     b.className = `pill ${pillClass[m.status]}`;
-    b.textContent = pillLabel[m.status];
+    b.textContent = I18N.t(`status.${m.status}`);
     document.getElementById(`t-${key}`).innerHTML = trendHTML[m.trend] || '';
   }
 }
@@ -261,47 +248,56 @@ function loadChart(n) {
     data: {
       labels: d.labels,
       datasets: [
-        { label: 'TCR',  data: d.datasets.tcr.map(v => +(v*100).toFixed(1)),        borderColor: '#7c6af7', backgroundColor: '#7c6af715', tension: .35, pointRadius: 3, fill: false },
-        { label: 'IC',   data: d.datasets.ic,                                         borderColor: '#f59e0b', tension: .35, pointRadius: 3, fill: false, yAxisID: 'y2' },
-        { label: 'CAR',  data: d.datasets.car.map(v => +(v*100).toFixed(1)),         borderColor: '#10b981', tension: .35, pointRadius: 3, fill: false },
-        { label: 'TTWC', data: d.datasets.ttwc_ratio.map(v => +(v*100).toFixed(1)), borderColor: '#f87171', tension: .35, pointRadius: 3, fill: false },
+        { label:'TCR',  data: d.datasets.tcr.map(v=>(v*100).toFixed(1)),        borderColor:'#7c6af7', tension:.35, pointRadius:3, fill:false },
+        { label:'IC',   data: d.datasets.ic,                                      borderColor:'#f59e0b', tension:.35, pointRadius:3, fill:false, yAxisID:'y2' },
+        { label:'CAR',  data: d.datasets.car.map(v=>(v*100).toFixed(1)),         borderColor:'#10b981', tension:.35, pointRadius:3, fill:false },
+        { label:'TTWC', data: d.datasets.ttwc_ratio.map(v=>(v*100).toFixed(1)), borderColor:'#f87171', tension:.35, pointRadius:3, fill:false },
       ],
     },
     options: {
       responsive: true,
-      interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { display: false } },
+      interaction: { mode:'index', intersect:false },
+      plugins: { legend:{ display:false } },
       scales: {
-        x:  { ticks: { color: '#5a6488', font: { size: 11 } }, grid: { color: '#161828' } },
-        y:  { ticks: { color: '#5a6488', callback: v => v + '%' }, grid: { color: '#161828' }, min: 0, max: 100 },
-        y2: { position: 'right', ticks: { color: '#f59e0b', font: { size: 11 } }, grid: { display: false }, min: 0, max: 10, title: { display: true, text: 'IC', color: '#f59e0b', font: { size: 11 } } },
+        x:  { ticks:{color:'#5a6488',font:{size:11}}, grid:{color:'#161828'} },
+        y:  { ticks:{color:'#5a6488',callback:v=>v+'%'}, grid:{color:'#161828'}, min:0, max:100 },
+        y2: { position:'right', ticks:{color:'#f59e0b',font:{size:11}}, grid:{display:false}, min:0, max:10,
+              title:{display:true,text:'IC',color:'#f59e0b',font:{size:11}} },
       },
     },
   });
+}
+
+function rowColor(val, target, invert) {
+  return (invert ? val <= target : val >= target) ? '' : 'color:var(--fail)';
 }
 
 function loadTable(n) {
   const sessions = KPI.getSessions().slice(-n).reverse();
   const tbody = document.getElementById('sessionBody');
   if (!sessions.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="big">📊</div>尚無資料<br><a href="log.html" style="color:var(--accent)">記錄第一筆 Session →</a></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      <div class="big">📊</div>
+      <div data-i18n="dash.empty.text">${I18N.t('dash.empty.text')}</div>
+      <br><a href="log.html" style="color:var(--accent)" data-i18n="dash.empty.cta">${I18N.t('dash.empty.cta')}</a>
+    </div></td></tr>`;
     return;
   }
   tbody.innerHTML = sessions.map(r => `
     <tr>
-      <td style="color:var(--muted);white-space:nowrap">${r.date}</td>
-      <td>${r.project || '<span style="color:var(--muted)">—</span>'}</td>
+      <td style="color:var(--muted);white-space:nowrap;font-size:.8rem">${r.date}</td>
+      <td>${r.project || `<span style="color:var(--muted)">—</span>`}</td>
       <td style="${rowColor(+r.tcr, .7, false)}">${(+r.tcr*100).toFixed(0)}%</td>
       <td style="${rowColor(+r.ic, 3, true)}">${(+r.ic).toFixed(1)}</td>
       <td style="${rowColor(+r.car, .6, false)}">${(+r.car*100).toFixed(0)}%</td>
-      <td style="${rowColor(+r.ttwc_ratio, .5, true)}">${(+r.ttwc_ratio*100).toFixed(0)}%</td>
-      <td style="color:var(--muted);font-size:.78rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.notes||''}</td>
-      <td><button class="btn btn-ghost" style="padding:.2rem .5rem;font-size:.75rem" onclick="delSession('${r.session_id}')"><i class="bi bi-trash3"></i></button></td>
+      <td style="${rowColor(+r.ttwc_ratio,.5,true)}">${(+r.ttwc_ratio*100).toFixed(0)}%</td>
+      <td style="color:var(--muted);font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes||''}</td>
+      <td><button class="btn btn-ghost" style="padding:.2rem .45rem;font-size:.72rem" onclick="delSession('${r.session_id}')"><i class="bi bi-trash3"></i></button></td>
     </tr>`).join('');
 }
 
 function delSession(id) {
-  if (!confirm('刪除這筆 session？')) return;
+  if (!confirm(I18N.lang === 'zh' ? '刪除這筆 session？' : 'Delete this session?')) return;
   KPI.deleteSession(id);
   refresh();
 }
@@ -311,35 +307,37 @@ function refresh() {
   loadHealth(n);
   loadChart(n);
   loadTable(n);
+  I18N.applyAll();
 }
 
-function openImport() { document.getElementById('importModal').style.display = 'flex'; }
-function closeImport() { document.getElementById('importModal').style.display = 'none'; }
+function openImport()  { document.getElementById('importModal').classList.add('open'); }
+function closeImport() { document.getElementById('importModal').classList.remove('open'); }
 
 async function doImport() {
   const file = document.getElementById('importFile').files[0];
-  if (!file) { alert('請選擇 CSV 檔案'); return; }
-  const type = document.getElementById('importType').value;
+  if (!file) { alert(I18N.lang==='zh'?'請選擇 CSV 檔案':'Please select a CSV file'); return; }
   try {
-    const result = await KPI.importCSV(file, type);
+    const r = await KPI.importCSV(file, document.getElementById('importType').value);
     closeImport();
     const f = document.getElementById('flash');
-    f.innerHTML = `<div class="flash"><i class="bi bi-check-circle"></i> 成功匯入 ${result.added} 筆（共 ${result.total} 筆，略過重複）</div>`;
-    setTimeout(() => f.innerHTML = '', 4000);
+    const msg = I18N.lang === 'zh'
+      ? `成功匯入 ${r.added} 筆（共 ${r.total} 筆，略過重複）`
+      : `Imported ${r.added} rows (${r.total} total, duplicates skipped)`;
+    f.innerHTML = `<div class="flash"><i class="bi bi-check-circle"></i> ${msg}</div>`;
+    setTimeout(() => f.innerHTML='', 4000);
     refresh();
-  } catch (e) {
-    alert('匯入失敗：' + e.message);
-  }
+  } catch(e) { alert('Error: '+e.message); }
 }
 
-// Show flash from log page
+// Flash from log page
 const msg = sessionStorage.getItem('kpi_flash');
 if (msg) {
   document.getElementById('flash').innerHTML = `<div class="flash"><i class="bi bi-check-circle"></i> ${msg}</div>`;
   sessionStorage.removeItem('kpi_flash');
-  setTimeout(() => document.getElementById('flash').innerHTML = '', 4000);
+  setTimeout(() => document.getElementById('flash').innerHTML='', 4000);
 }
 
+I18N.init();
 refresh();
 </script>
 </body>

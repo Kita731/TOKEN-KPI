@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C \"D:/claude projects/TOKEN KPI\" status)"
+      "Bash(git -C \"D:/claude projects/TOKEN KPI\" status)",
+      "Bash(curl --version)",
+      "Bash(pip install:*)",
+      "Bash(pip3 --version)",
+      "Bash(py --version)",
+      "Bash(py -m pip install flask -q)",
+      "Bash(timeout 5 py -c \"import app; print\\('OK'\\)\")",
+      "Bash(curl:*)"
     ]
   }
 }

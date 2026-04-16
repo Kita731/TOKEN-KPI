@@ -4,7 +4,9 @@
 """
 import csv
 import json
+import os
 import sys
+import tempfile
 import time
 from datetime import date
 from pathlib import Path
@@ -69,34 +71,77 @@ def compute(events: list[dict], session_id: str) -> dict:
     }
 
 
+class _FileLock:
+    """跨平台 CSV 檔案鎖，防止多個 bg_save worker 同時寫入造成資料損壞。"""
+
+    def __init__(self, lock_path: Path, timeout: float = 15.0):
+        self.lock_path = lock_path
+        self.timeout = timeout
+
+    def __enter__(self):
+        deadline = time.time() + self.timeout
+        while True:
+            try:
+                fd = os.open(str(self.lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                os.close(fd)
+                return self
+            except FileExistsError:
+                try:
+                    age = time.time() - self.lock_path.stat().st_mtime
+                    if age > 60:  # 超過 60 秒視為殭屍鎖，強制清除
+                        self.lock_path.unlink(missing_ok=True)
+                        continue
+                except OSError:
+                    pass
+                if time.time() >= deadline:
+                    self.lock_path.unlink(missing_ok=True)
+                    continue
+                time.sleep(0.05)
+
+    def __exit__(self, *_):
+        self.lock_path.unlink(missing_ok=True)
+
+
 def upsert_csv(row: dict):
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    lock_path = DATA_DIR / "sessions.csv.lock"
 
-    existing: list[dict] = []
-    found = False
+    with _FileLock(lock_path):
+        existing: list[dict] = []
+        found = False
 
-    if SESSIONS_CSV.exists() and SESSIONS_CSV.stat().st_size > 0:
-        with open(SESSIONS_CSV, encoding="utf-8", newline="") as f:
-            for r in csv.DictReader(f):
-                if r.get("session_id") == row["session_id"]:
-                    # 保留使用者手動填寫的欄位，只更新自動偵測的欄位
-                    merged = dict(r)
-                    for auto_key in ("ic", "avg_iterations", "lines_generated", "ttwc_claude_min", "date", "project"):
-                        merged[auto_key] = row[auto_key]
-                    if not merged.get("notes") or merged["notes"] == "[auto]":
-                        merged["notes"] = row["notes"]
-                    existing.append(merged)
-                    found = True
-                else:
-                    existing.append(r)
+        if SESSIONS_CSV.exists() and SESSIONS_CSV.stat().st_size > 0:
+            with open(SESSIONS_CSV, encoding="utf-8", newline="") as f:
+                for r in csv.DictReader(f):
+                    if r.get("session_id") == row["session_id"]:
+                        # 保留使用者手動填寫的欄位，只更新自動偵測的欄位
+                        merged = dict(r)
+                        for auto_key in ("ic", "avg_iterations", "lines_generated", "ttwc_claude_min", "date", "project"):
+                            merged[auto_key] = row[auto_key]
+                        if not merged.get("notes") or merged["notes"] == "[auto]":
+                            merged["notes"] = row["notes"]
+                        existing.append(merged)
+                        found = True
+                    else:
+                        existing.append(r)
 
-    if not found:
-        existing.append(row)
+        if not found:
+            existing.append(row)
 
-    with open(SESSIONS_CSV, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(existing)
+        # 原子性寫入：先寫暫存檔，成功後才替換原檔，crash 不會損毀資料
+        tmp_fd, tmp_path = tempfile.mkstemp(dir=DATA_DIR, suffix=".tmp")
+        try:
+            with os.fdopen(tmp_fd, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=FIELDNAMES, extrasaction="ignore")
+                writer.writeheader()
+                writer.writerows(existing)
+            os.replace(tmp_path, SESSIONS_CSV)
+        except Exception:
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            raise
 
 
 def main():

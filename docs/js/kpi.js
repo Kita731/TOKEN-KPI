@@ -342,7 +342,7 @@ const KPI = {
     localStorage.removeItem('kpi_pge');
   },
 
-  // ── Remote Sync ───────────────────────────────────────
+  // ── Remote Sync (GitHub raw) ──────────────────────────
 
   async syncFromRemote(baseUrl = 'https://raw.githubusercontent.com/kita731/TOKEN-KPI/main/data') {
     const targets = [
@@ -364,8 +364,75 @@ const KPI = {
           localStorage.setItem(key, JSON.stringify([...existing, ...newRows]));
           totalAdded += newRows.length;
         }
-      } catch (_) { /* 離線或檔案不存在時靜默略過 */ }
+      } catch (_) {}
     }
     return totalAdded;
+  },
+
+  // ── Local File Access (File System Access API) ────────
+
+  _idb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('kpi_fs', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('handles');
+      req.onsuccess = e => resolve(e.target.result);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async _saveHandle(key, handle) {
+    try {
+      const db = await this._idb();
+      await new Promise((res, rej) => {
+        const tx = db.transaction('handles', 'readwrite');
+        tx.objectStore('handles').put(handle, key);
+        tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+      });
+    } catch (_) {}
+  },
+
+  async _loadHandle(key) {
+    try {
+      const db = await this._idb();
+      return await new Promise((res, rej) => {
+        const tx = db.transaction('handles', 'readonly');
+        const req = tx.objectStore('handles').get(key);
+        req.onsuccess = () => res(req.result || null);
+        req.onerror = () => rej(req.error);
+      });
+    } catch (_) { return null; }
+  },
+
+  // 讓使用者選擇本機 sessions.csv，儲存 handle 供之後自動讀取
+  async openLocalFile() {
+    if (!window.showOpenFilePicker) return null;
+    const [handle] = await window.showOpenFilePicker({
+      id: 'sessions-csv',
+      startIn: 'documents',
+      types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }],
+    });
+    await this._saveHandle('sessions', handle);
+    return handle;
+  },
+
+  // 用已儲存的 handle 自動讀取並 merge，回傳新增筆數；-1 = 尚未設定路徑
+  async syncFromLocalFile() {
+    const handle = await this._loadHandle('sessions');
+    if (!handle) return -1;
+    let perm = await handle.queryPermission({ mode: 'read' });
+    if (perm === 'prompt') perm = await handle.requestPermission({ mode: 'read' });
+    if (perm !== 'granted') return -1;
+    const text = await (await handle.getFile()).text();
+    const rows = this.parseCSV(text);
+    const existing = JSON.parse(localStorage.getItem('kpi_sessions') || '[]');
+    const existingIds = new Set(existing.map(r => r.session_id));
+    const newRows = rows.filter(r => r.session_id && !existingIds.has(r.session_id));
+    if (newRows.length) localStorage.setItem('kpi_sessions', JSON.stringify([...existing, ...newRows]));
+    return newRows.length;
+  },
+
+  async getStoredFileName() {
+    const handle = await this._loadHandle('sessions');
+    return handle ? handle.name : null;
   },
 };

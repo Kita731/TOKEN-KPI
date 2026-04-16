@@ -1,3 +1,9 @@
+## [0.4.1] - 2026-04-17
+- bg_save.py：Stop hook 改為背景自動計算並 upsert sessions.csv，不阻塞 Claude Code
+- hook_stop.py：重構為輕量觸發器，立即返回後背景執行計算
+- Dashboard：支援顯示自動記錄的 sessions（AUTO tag、空值處理、TCR 快速填入 popover）
+- README：重寫中英文版，強調零設定、全自動流程
+
 ## [0.2.0] - 2026-04-17
 - Flask 網頁儀表板：Dashboard / 記錄 Session / 週報 三個頁面
 - kpi_core.py：共用資料層（CSV 讀寫、指標計算、健康狀態判斷）

@@ -55,6 +55,16 @@
     .flash { background: #16a34a18; border: 1px solid #16a34a30; color: var(--pass); padding: .7rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: .875rem; display: flex; align-items: center; gap: .5rem; }
     .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
     .empty-state .big { font-size: 2.5rem; margin-bottom: .5rem; }
+    .auto-tag { display:inline-block; background:#7c6af730; color:#a89cf7; font-size:.6rem; padding:.1rem .4rem; border-radius:3px; font-weight:700; letter-spacing:.04em; vertical-align:middle; margin-right:.3rem; }
+    .pending-tag { display:inline-block; background:#ca8a0418; color:var(--warn); font-size:.6rem; padding:.1rem .4rem; border-radius:3px; font-weight:700; letter-spacing:.04em; }
+    /* TCR quick-fill popover */
+    .tcr-form { display:none; position:absolute; background:var(--card); border:1px solid var(--border); border-radius:8px; padding:.75rem; z-index:50; box-shadow:0 8px 24px #00000060; min-width:220px; }
+    .tcr-form.open { display:block; }
+    .tcr-form label { font-size:.72rem; color:var(--muted); display:block; margin-bottom:.3rem; }
+    .tcr-form input { width:100%; background:#0d0f18; border:1px solid var(--border); color:var(--text); padding:.35rem .5rem; border-radius:6px; font-size:.8rem; outline:none; }
+    .tcr-form input:focus { border-color:var(--accent); }
+    .tcr-row { display:flex; gap:.4rem; margin-top:.5rem; }
+    td { position:relative; }
 
     /* Import Modal */
     .modal-backdrop { display: none; position: fixed; inset: 0; background: #00000090; z-index: 200; align-items: center; justify-content: center; }
@@ -269,8 +279,48 @@ function loadChart(n) {
 }
 
 function rowColor(val, target, invert) {
-  return (invert ? val <= target : val >= target) ? '' : 'color:var(--fail)';
+  if (val === '' || val === null || isNaN(+val)) return 'color:var(--muted)';
+  return (invert ? +val <= target : +val >= target) ? '' : 'color:var(--fail)';
 }
+
+function fmtPct(v) { return (v === '' || v === null || v === undefined) ? '<span style="color:var(--muted)">—</span>' : (v*100).toFixed(0)+'%'; }
+function fmtNum(v) { return (v === '' || v === null || v === undefined) ? '<span style="color:var(--muted)">—</span>' : (+v).toFixed(1); }
+
+let openTcrForm = null;
+
+function closeTcrForms() {
+  document.querySelectorAll('.tcr-form').forEach(el => el.classList.remove('open'));
+  openTcrForm = null;
+}
+
+function toggleTcr(sid) {
+  const el = document.getElementById('tcr-'+sid);
+  if (!el) return;
+  if (el.classList.contains('open')) { closeTcrForms(); return; }
+  closeTcrForms();
+  el.classList.add('open');
+  openTcrForm = sid;
+  el.querySelector('.tcr-total').focus();
+}
+
+function saveTcr(sid) {
+  const total  = parseInt(document.getElementById('tcr-'+sid).querySelector('.tcr-total').value);
+  const passed = parseInt(document.getElementById('tcr-'+sid).querySelector('.tcr-passed').value);
+  if (isNaN(total) || isNaN(passed)) return;
+  const sessions = KPI.getSessions();
+  const idx = sessions.findIndex(s => s.session_id === sid);
+  if (idx === -1) return;
+  sessions[idx].total_tasks      = total;
+  sessions[idx].passed_first_try = passed;
+  sessions[idx].tcr              = KPI.round(passed / total);
+  localStorage.setItem('kpi_sessions', JSON.stringify(sessions));
+  closeTcrForms();
+  refresh();
+}
+
+document.addEventListener('click', e => {
+  if (openTcrForm && !e.target.closest('.tcr-form') && !e.target.closest('.tcr-btn')) closeTcrForms();
+});
 
 function loadTable(n) {
   const sessions = KPI.getSessions().slice(-n).reverse();
@@ -278,22 +328,51 @@ function loadTable(n) {
   if (!sessions.length) {
     tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
       <div class="big">📊</div>
-      <div data-i18n="dash.empty.text">${I18N.t('dash.empty.text')}</div>
-      <br><a href="log.html" style="color:var(--accent)" data-i18n="dash.empty.cta">${I18N.t('dash.empty.cta')}</a>
+      <div>${I18N.t('dash.empty.text')}</div>
+      <br><a href="log.html" style="color:var(--accent)">${I18N.t('dash.empty.cta')}</a>
     </div></td></tr>`;
     return;
   }
-  tbody.innerHTML = sessions.map(r => `
-    <tr>
-      <td style="color:var(--muted);white-space:nowrap;font-size:.8rem">${r.date}</td>
-      <td>${r.project || `<span style="color:var(--muted)">—</span>`}</td>
-      <td style="${rowColor(+r.tcr, .7, false)}">${(+r.tcr*100).toFixed(0)}%</td>
-      <td style="${rowColor(+r.ic, 3, true)}">${(+r.ic).toFixed(1)}</td>
-      <td style="${rowColor(+r.car, .6, false)}">${(+r.car*100).toFixed(0)}%</td>
-      <td style="${rowColor(+r.ttwc_ratio,.5,true)}">${(+r.ttwc_ratio*100).toFixed(0)}%</td>
-      <td style="color:var(--muted);font-size:.78rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.notes||''}</td>
-      <td><button class="btn btn-ghost" style="padding:.2rem .45rem;font-size:.72rem" onclick="delSession('${r.session_id}')"><i class="bi bi-trash3"></i></button></td>
-    </tr>`).join('');
+
+  tbody.innerHTML = sessions.map(r => {
+    const isAuto    = (r.notes || '').includes('[auto]');
+    const missingTcr = r.tcr === '' || r.tcr === null || r.tcr === undefined;
+    const sid = r.session_id;
+
+    const tcrCell = missingTcr
+      ? `<span class="pending-tag">?</span>
+         <button class="btn btn-ghost tcr-btn" style="padding:.15rem .4rem;font-size:.7rem;margin-left:.2rem" onclick="toggleTcr('${sid}')">
+           <i class="bi bi-pencil"></i>
+         </button>
+         <div class="tcr-form" id="tcr-${sid}">
+           <label>${I18N.lang==='zh'?'填入 TCR':'Enter TCR'}</label>
+           <div style="display:flex;gap:.4rem;margin-bottom:.4rem">
+             <input class="tcr-total"  type="number" min="1" placeholder="${I18N.lang==='zh'?'總任務':'Total'}" style="width:50%">
+             <input class="tcr-passed" type="number" min="0" placeholder="${I18N.lang==='zh'?'通過':'Passed'}" style="width:50%">
+           </div>
+           <div class="tcr-row">
+             <button class="btn btn-primary" style="font-size:.75rem;padding:.3rem .6rem;flex:1" onclick="saveTcr('${sid}')">
+               <i class="bi bi-check"></i> OK
+             </button>
+             <button class="btn btn-ghost" style="font-size:.75rem;padding:.3rem .6rem" onclick="closeTcrForms()">✕</button>
+           </div>
+         </div>`
+      : `<span style="${rowColor(r.tcr,.7,false)}">${fmtPct(+r.tcr)}</span>`;
+
+    return `<tr>
+      <td style="white-space:nowrap;font-size:.8rem;color:var(--muted)">${r.date}</td>
+      <td>
+        ${isAuto ? '<span class="auto-tag">AUTO</span>' : ''}
+        ${r.project || '<span style="color:var(--muted)">—</span>'}
+      </td>
+      <td>${tcrCell}</td>
+      <td style="${rowColor(r.ic,3,true)}">${fmtNum(r.ic)}</td>
+      <td style="${rowColor(r.car,.6,false)}">${fmtPct(r.car === ''?null:+r.car)}</td>
+      <td style="${rowColor(r.ttwc_ratio,.5,true)}">${fmtPct(r.ttwc_ratio===''?null:+r.ttwc_ratio)}</td>
+      <td style="color:var(--muted);font-size:.78rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(r.notes||'').replace('[auto]','').trim()}</td>
+      <td><button class="btn btn-ghost" style="padding:.2rem .45rem;font-size:.72rem" onclick="delSession('${sid}')"><i class="bi bi-trash3"></i></button></td>
+    </tr>`;
+  }).join('');
 }
 
 function delSession(id) {

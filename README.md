@@ -29,17 +29,18 @@ TOKEN KPI 是一套 **全自動** 的 Claude Code 效率追蹤系統。
 | 項目 | 狀態 |
 |------|------|
 | Python | 已安裝即可（系統自帶的 `py` 指令） |
-| Claude Code Hooks | **已自動設定**，clone 此 repo 後即生效 |
+| Claude Code Hooks | 執行 `py setup.py` 後自動設定 |
 | 手動操作 | **不需要** |
 
 **第一次使用只需要這兩步：**
 
 ```bash
-git clone https://github.com/kita731/TOKEN-KPI.git "D:/claude projects/TOKEN KPI"
+git clone https://github.com/kita731/TOKEN-KPI.git <你想要的路徑>
+py setup.py
 # 完成。從此 Claude Code 的每個 session 都會自動記錄。
 ```
 
-> **注意**：如果你把 repo clone 到不同路徑，請更新 `~/.claude/settings.json` 中的 hook 路徑（兩處 `"D:/claude projects/TOKEN KPI/tracker/..."`）。
+`setup.py` 會自動偵測 repo 所在位置，寫入 `~/.claude/settings.json`，clone 到任何路徑都不需要手動修改設定。
 
 ---
 
@@ -182,17 +183,18 @@ It uses Claude Code Hooks to silently record metrics in the background — no fo
 | Requirement | Status |
 |-------------|--------|
 | Python | Must be installed (uses the `py` command) |
-| Claude Code Hooks | **Pre-configured** — active as soon as you clone this repo |
+| Claude Code Hooks | Configured automatically by `py setup.py` |
 | Manual steps | **None** |
 
 **First-time setup — two steps:**
 
 ```bash
-git clone https://github.com/kita731/TOKEN-KPI.git "D:/claude projects/TOKEN KPI"
+git clone https://github.com/kita731/TOKEN-KPI.git <your-preferred-path>
+py setup.py
 # Done. Every Claude Code session is now tracked automatically.
 ```
 
-> **Note**: If you clone to a different path, update the two hook paths in `~/.claude/settings.json` (lines containing `"D:/claude projects/TOKEN KPI/tracker/..."`).
+`setup.py` detects the repo's location and writes the correct paths to `~/.claude/settings.json`. Clone anywhere — no manual config editing required.
 
 ---
 

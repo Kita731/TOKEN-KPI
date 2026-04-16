@@ -159,5 +159,20 @@ async function refresh() {
 
 document.getElementById('windowSelect').addEventListener('change', refresh);
 refresh();
+
+// 每 30 秒自動重新載入資料（hooks 寫入後不需手動重新整理頁面）
+const AUTO_REFRESH_SEC = 30;
+let countdown = AUTO_REFRESH_SEC;
+const indicator = document.createElement('span');
+indicator.className = 'text-muted small';
+document.querySelector('#windowSelect').closest('.d-flex.gap-2').appendChild(indicator);
+setInterval(() => {
+  countdown--;
+  indicator.textContent = `自動更新 ${countdown}s`;
+  if (countdown <= 0) {
+    countdown = AUTO_REFRESH_SEC;
+    refresh();
+  }
+}, 1000);
 </script>
 {% endblock %}

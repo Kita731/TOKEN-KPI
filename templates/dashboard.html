@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — TOKEN KPI{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h4 fw-bold mb-0">Dashboard</h1>
+  <div class="d-flex gap-2 align-items-center">
+    <span class="text-muted small">近</span>
+    <select class="form-select form-select-sm" id="windowSelect" style="width:80px">
+      <option value="10" selected>10</option>
+      <option value="20">20</option>
+      <option value="30">30</option>
+    </select>
+    <span class="text-muted small">筆</span>
+  </div>
+</div>
+
+<!-- Health Cards -->
+<div class="row g-3 mb-4" id="healthCards">
+  {% for key, label, target_label in [
+    ('tcr',  'TCR  Task Completion Rate', '目標 > 70%'),
+    ('ic',   'IC   Iteration Count',      '目標 < 3'),
+    ('car',  'CAR  Code Acceptance Rate', '目標 > 60%'),
+    ('ttwc', 'TTWC Time-to-Working-Code', '目標 < 50%')
+  ] %}
+  <div class="col-sm-6 col-xl-3">
+    <div class="card p-3 h-100">
+      <div class="card-title mb-2">{{ label }}</div>
+      <div class="d-flex align-items-end gap-2 mb-2">
+        <div class="metric-value" id="val-{{ key }}">—</div>
+        <div class="mb-1" id="trend-{{ key }}"></div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge rounded-pill px-2" id="badge-{{ key }}">—</span>
+        <span class="text-muted small">{{ target_label }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Trend Chart -->
+<div class="card p-3 mb-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="section-title mb-0">趨勢圖</div>
+    <div class="d-flex gap-2">
+      {% for key, color, label in [
+        ('tcr','#7c6af7','TCR'), ('ic','#f59e0b','IC'),
+        ('car','#10b981','CAR'), ('ttwc','#f87171','TTWC')
+      ] %}
+      <span class="small d-flex align-items-center gap-1">
+        <span style="width:12px;height:12px;background:{{ color }};border-radius:2px;display:inline-block"></span>
+        {{ label }}
+      </span>
+      {% endfor %}
+    </div>
+  </div>
+  <canvas id="trendChart" height="90"></canvas>
+</div>
+
+<!-- Recent Sessions Table -->
+<div class="card p-3">
+  <div class="section-title">最近 Sessions</div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>日期</th><th>專案</th>
+          <th>TCR</th><th>IC</th><th>CAR</th><th>TTWC</th>
+          <th>備註</th>
+        </tr>
+      </thead>
+      <tbody id="sessionTable">
+        <tr><td colspan="7" class="text-center text-muted py-3">載入中…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const statusClass = { pass: 'badge-pass', warn: 'badge-warn', fail: 'badge-fail' };
+const statusLabel = { pass: '達標', warn: '注意', fail: '未達標' };
+const trendIcon = { up: '<i class="bi bi-arrow-up trend-up"></i>', down: '<i class="bi bi-arrow-down trend-down"></i>', stable: '<i class="bi bi-dash trend-stable"></i>' };
+
+let trendChart = null;
+
+async function loadHealth(n) {
+  const data = await fetch(`/api/health?n=${n}`).then(r => r.json());
+  for (const [key, m] of Object.entries(data.metrics || {})) {
+    const isPercent = key !== 'ic';
+    document.getElementById(`val-${key}`).textContent = isPercent ? (m.value * 100).toFixed(1) + '%' : m.value.toFixed(1);
+    const badge = document.getElementById(`badge-${key}`);
+    badge.className = `badge rounded-pill px-2 ${statusClass[m.status]}`;
+    badge.textContent = statusLabel[m.status];
+    document.getElementById(`trend-${key}`).innerHTML = trendIcon[m.trend] || '';
+  }
+}
+
+async function loadTrends(n) {
+  const data = await fetch(`/api/trends?n=${n}`).then(r => r.json());
+  const labels = data.labels;
+  const ds = data.datasets;
+
+  const datasets = [
+    { label: 'TCR',  data: ds.tcr.map(v => (v*100).toFixed(1)),        borderColor: '#7c6af7', tension: .3, pointRadius: 3 },
+    { label: 'IC',   data: ds.ic,                                        borderColor: '#f59e0b', tension: .3, pointRadius: 3, yAxisID: 'y2' },
+    { label: 'CAR',  data: ds.car.map(v => (v*100).toFixed(1)),         borderColor: '#10b981', tension: .3, pointRadius: 3 },
+    { label: 'TTWC', data: ds.ttwc_ratio.map(v => (v*100).toFixed(1)), borderColor: '#f87171', tension: .3, pointRadius: 3 },
+  ];
+
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#64748b' }, grid: { color: '#1e2235' } },
+        y: { ticks: { color: '#64748b', callback: v => v + '%' }, grid: { color: '#1e2235' }, min: 0, max: 100 },
+        y2: { position: 'right', ticks: { color: '#f59e0b' }, grid: { display: false }, min: 0, max: 10,
+              title: { display: true, text: 'IC', color: '#f59e0b' } },
+      },
+    }
+  });
+}
+
+function rowColor(val, target, invert) {
+  const ok = invert ? val <= target : val >= target;
+  return ok ? '' : 'color:#f87171';
+}
+
+async function loadSessions(n) {
+  const rows = await fetch(`/api/sessions/recent?n=${n}`).then(r => r.json());
+  const tbody = document.getElementById('sessionTable');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">尚無資料，<a href="/log" class="text-decoration-none" style="color:#7c6af7">記錄第一筆 →</a></td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td class="text-muted small">${r.date}</td>
+      <td>${r.project || '—'}</td>
+      <td style="${rowColor(+r.tcr, .7, false)}">${(+r.tcr*100).toFixed(0)}%</td>
+      <td style="${rowColor(+r.ic, 3, true)}">${(+r.ic).toFixed(1)}</td>
+      <td style="${rowColor(+r.car, .6, false)}">${(+r.car*100).toFixed(0)}%</td>
+      <td style="${rowColor(+r.ttwc_ratio, .5, true)}">${(+r.ttwc_ratio*100).toFixed(0)}%</td>
+      <td class="text-muted small">${r.notes || ''}</td>
+    </tr>`).join('');
+}
+
+async function refresh() {
+  const n = +document.getElementById('windowSelect').value;
+  await Promise.all([loadHealth(n), loadTrends(n), loadSessions(n)]);
+}
+
+document.getElementById('windowSelect').addEventListener('change', refresh);
+refresh();
+</script>
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}記錄 Session — TOKEN KPI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <h1 class="h4 fw-bold mb-4"><i class="bi bi-plus-circle me-2" style="color:#7c6af7"></i>記錄 Session</h1>
+
+    <form method="POST" action="/log">
+
+      <!-- 基本資訊 -->
+      <div class="card p-4 mb-3">
+        <div class="section-title">基本資訊</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">專案名稱</label>
+            <input type="text" class="form-control" name="project" placeholder="例：TOKEN-KPI" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">日期</label>
+            <input type="date" class="form-control" name="date" value="{{ today }}">
+          </div>
+        </div>
+      </div>
+
+      <!-- 核心指標 -->
+      <div class="card p-4 mb-3">
+        <div class="section-title">核心指標</div>
+        <div class="row g-3">
+
+          <!-- TCR -->
+          <div class="col-md-4">
+            <label class="form-label">總任務數</label>
+            <input type="number" class="form-control" name="total_tasks" id="total_tasks" value="5" min="1" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">一次通過數</label>
+            <input type="number" class="form-control" name="passed_first_try" id="passed_first_try" value="4" min="0" required>
+          </div>
+          <div class="col-md-4 d-flex flex-column justify-content-end">
+            <label class="form-label">TCR 預覽</label>
+            <div class="preview-val" id="tcr-preview">—</div>
+            <small class="text-muted">目標 > 70%</small>
+          </div>
+
+          <!-- IC -->
+          <div class="col-md-4">
+            <label class="form-label">平均來回次數 (IC)</label>
+            <input type="number" class="form-control" name="avg_iterations" id="avg_iterations" value="2" step="0.1" min="1" required>
+          </div>
+          <div class="col-md-4 d-flex flex-column justify-content-end">
+            <label class="form-label">IC 狀態</label>
+            <div class="preview-val" id="ic-preview">—</div>
+            <small class="text-muted">目標 < 3</small>
+          </div>
+          <div class="col-md-4"></div>
+
+          <!-- CAR -->
+          <div class="col-md-4">
+            <label class="form-label">Claude 產出行數</label>
+            <input type="number" class="form-control" name="lines_generated" id="lines_generated" value="100" min="1" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">最終保留行數</label>
+            <input type="number" class="form-control" name="lines_kept" id="lines_kept" value="80" min="0" required>
+          </div>
+          <div class="col-md-4 d-flex flex-column justify-content-end">
+            <label class="form-label">CAR 預覽</label>
+            <div class="preview-val" id="car-preview">—</div>
+            <small class="text-muted">目標 > 60%</small>
+          </div>
+
+          <!-- TTWC -->
+          <div class="col-md-4">
+            <label class="form-label">Claude 完成時間（分）</label>
+            <input type="number" class="form-control" name="ttwc_claude_min" id="ttwc_claude" value="15" step="0.5" min="0" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">手寫估計時間（分）</label>
+            <input type="number" class="form-control" name="ttwc_manual_estimate_min" id="ttwc_manual" value="40" step="0.5" min="1" required>
+          </div>
+          <div class="col-md-4 d-flex flex-column justify-content-end">
+            <label class="form-label">TTWC 預覽</label>
+            <div class="preview-val" id="ttwc-preview">—</div>
+            <small class="text-muted">目標 < 50%</small>
+          </div>
+
+          <!-- 備註 -->
+          <div class="col-12">
+            <label class="form-label">備註</label>
+            <textarea class="form-control" name="notes" rows="2" placeholder="（選填）這次 session 的觀察…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- PGE 指標（可折疊） -->
+      <div class="card p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="section-title mb-0">PGE 流程指標（選填）</div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" name="use_pge" id="use_pge">
+            <label class="form-check-label text-muted small" for="use_pge">記錄 PGE</label>
+          </div>
+        </div>
+        <div id="pge-fields" style="display:none">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Planner 步驟總數</label>
+              <input type="number" class="form-control" name="plan_steps_total" id="plan_total" value="5" min="1">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Generator 採用步驟數</label>
+              <input type="number" class="form-control" name="plan_steps_adopted" id="plan_adopted" value="5" min="0">
+            </div>
+            <div class="col-md-4 d-flex flex-column justify-content-end">
+              <label class="form-label">PA 預覽</label>
+              <div class="preview-val" id="pa-preview">—</div>
+              <small class="text-muted">越高越好</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Evaluator 抓到的問題</label>
+              <input type="number" class="form-control" name="issues_caught_by_evaluator" id="eval_caught" value="0" min="0">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">最終總問題數</label>
+              <input type="number" class="form-control" name="total_final_issues" id="eval_total" value="0" min="0">
+            </div>
+            <div class="col-md-4 d-flex flex-column justify-content-end">
+              <label class="form-label">ECR 預覽</label>
+              <div class="preview-val" id="ecr-preview">—</div>
+              <small class="text-muted">越高越好</small>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Handoff Loss 次數 (HL)</label>
+              <input type="number" class="form-control" name="handoff_loss_count" value="0" min="0">
+            </div>
+            <div class="col-8">
+              <label class="form-label">PGE 備註</label>
+              <input type="text" class="form-control" name="pge_notes" placeholder="（選填）">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary px-5">
+        <i class="bi bi-check-lg me-2"></i>儲存 Session
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function pct(n, d) { return d > 0 ? n / d : 0; }
+
+function colorClass(val, target, invert) {
+  const ok = invert ? val <= target : val >= target;
+  const warn = invert ? val <= target * 1.5 : val >= target * 0.8;
+  return ok ? 'preview-pass' : (warn ? 'preview-warn' : 'preview-fail');
+}
+
+function setPreview(id, val, target, invert, isPercent = true) {
+  const el = document.getElementById(id);
+  el.textContent = isPercent ? (val * 100).toFixed(1) + '%' : val.toFixed(1);
+  el.className = 'preview-val ' + colorClass(val, target, invert);
+}
+
+function updatePreviews() {
+  const total = +document.getElementById('total_tasks').value || 1;
+  const passed = +document.getElementById('passed_first_try').value || 0;
+  const ic = +document.getElementById('avg_iterations').value || 0;
+  const gen = +document.getElementById('lines_generated').value || 1;
+  const kept = +document.getElementById('lines_kept').value || 0;
+  const claude = +document.getElementById('ttwc_claude').value || 0;
+  const manual = +document.getElementById('ttwc_manual').value || 1;
+
+  setPreview('tcr-preview',  pct(passed, total), 0.70, false);
+  setPreview('ic-preview',   ic,                 3.0,  true, false);
+  setPreview('car-preview',  pct(kept, gen),     0.60, false);
+  setPreview('ttwc-preview', pct(claude, manual), 0.50, true);
+}
+
+function updatePgePreviews() {
+  const pt = +document.getElementById('plan_total').value || 1;
+  const pa = +document.getElementById('plan_adopted').value || 0;
+  const ec = +document.getElementById('eval_caught').value || 0;
+  const et = +document.getElementById('eval_total').value || 0;
+
+  const paEl = document.getElementById('pa-preview');
+  paEl.textContent = (pct(pa, pt) * 100).toFixed(1) + '%';
+  paEl.className = 'preview-val preview-pass';
+
+  const ecrEl = document.getElementById('ecr-preview');
+  ecrEl.textContent = et > 0 ? (pct(ec, et) * 100).toFixed(1) + '%' : 'N/A';
+  ecrEl.className = 'preview-val preview-pass';
+}
+
+document.querySelectorAll('input[type=number]').forEach(el => {
+  el.addEventListener('input', () => { updatePreviews(); updatePgePreviews(); });
+});
+
+document.getElementById('use_pge').addEventListener('change', function () {
+  document.getElementById('pge-fields').style.display = this.checked ? '' : 'none';
+});
+
+updatePreviews();
+updatePgePreviews();
+</script>
+{% endblock %}

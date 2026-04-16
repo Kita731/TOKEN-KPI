@@ -1,3 +1,9 @@
+## [0.5.0] - 2026-04-17
+- i18n.js：新增 10 條 desc.* 指標詳細說明 + 11 條 help.* 欄位說明（中英各一份）
+- index.html：Health Card 加 ⓘ tooltip，點擊顯示指標說明，語言切換即時更新
+- log.html：所有核心指標與 PGE 欄位加上說明小字（.field-help）
+- weekly.html：BIR / RR / CE 欄位加上說明小字，label 改為中文名稱
+
 ## [0.4.1] - 2026-04-17
 - bg_save.py：Stop hook 改為背景自動計算並 upsert sessions.csv，不阻塞 Claude Code
 - hook_stop.py：重構為輕量觸發器，立即返回後背景執行計算

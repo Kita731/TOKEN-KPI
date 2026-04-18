@@ -5,6 +5,7 @@
 import csv
 import json
 import os
+import subprocess
 import sys
 import tempfile
 import time
@@ -15,6 +16,9 @@ SESSION_DIR  = Path.home() / ".claude" / "kpi-sessions"
 KPI_DIR      = Path(__file__).parent.parent
 DATA_DIR     = KPI_DIR / "data"
 SESSIONS_CSV = DATA_DIR / "sessions.csv"
+CONFIG_FILE  = DATA_DIR / "config.json"
+PUSH_STAMP   = DATA_DIR / ".last_push"
+PUSH_DEBOUNCE_SEC = 300
 
 sys.path.insert(0, str(KPI_DIR))
 from kpi_core import SESSIONS_FIELDNAMES as FIELDNAMES  # noqa: E402
@@ -138,6 +142,50 @@ def upsert_csv(row: dict):
             raise
 
 
+def should_auto_push() -> bool:
+    """讀 config.json 的 auto_push 開關（預設 True）。"""
+    try:
+        if CONFIG_FILE.exists():
+            cfg = json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
+            return bool(cfg.get("auto_push", True))
+    except Exception:
+        pass
+    return True
+
+
+def push_to_remote() -> None:
+    """
+    自動 commit + push sessions.csv 到 origin。
+    5 分鐘 debounce 避免每次 Claude 回覆都產生 commit。
+    所有錯誤靜默 — 不影響 hook 主流程（例如離線、沒權限、branch protection）。
+    """
+    if not should_auto_push():
+        return
+
+    now = time.time()
+    if PUSH_STAMP.exists() and (now - PUSH_STAMP.stat().st_mtime) < PUSH_DEBOUNCE_SEC:
+        return
+
+    repo = ["-C", str(KPI_DIR)]
+    run = lambda cmd, t=10: subprocess.run(  # noqa: E731
+        ["git", *repo, *cmd],
+        capture_output=True, timeout=t,
+    )
+    try:
+        if run(["add", str(SESSIONS_CSV)]).returncode != 0:
+            return
+        # 無實質差異就跳過，避免空 commit
+        if run(["diff", "--cached", "--quiet"], t=5).returncode == 0:
+            return
+        if run(["commit", "-m", "[auto] update kpi sessions"]).returncode != 0:
+            return
+        if run(["push", "origin", "HEAD"], t=30).returncode != 0:
+            return
+        PUSH_STAMP.write_text(str(now))
+    except Exception:
+        pass
+
+
 def main():
     if len(sys.argv) < 2:
         return
@@ -153,6 +201,7 @@ def main():
 
     row = compute(events, session_id)
     upsert_csv(row)
+    push_to_remote()
 
 
 if __name__ == "__main__":

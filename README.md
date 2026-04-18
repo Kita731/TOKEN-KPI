@@ -67,14 +67,17 @@ py setup.py
     │
     ├─ PostToolUse hook ──→ 記錄每次工具呼叫（Write/Edit 行數）
     │
-    └─ Stop hook ─────────→ 記錄每次回應 → 背景計算 → 儲存到 sessions.csv
-                                               ↑
-                                         完全自動，不阻塞 Claude Code
+    └─ Stop hook ─────────→ 記錄每次回應 → 背景計算 → 寫入 sessions.csv
+                                                     → 自動 git push（5 分鐘 debounce）
+                                                     → Dashboard 30 秒輪詢拉 GitHub raw
 ```
 
-資料儲存在兩個地方：
-- `data/sessions.csv` — 本地 Python 版（自動更新）
-- 瀏覽器 localStorage — GitHub Pages 版（手動匯入 CSV 或透過網頁填表）
+資料流：
+- `data/sessions.csv` — 本機由 hook 寫入（每次 Claude 回應）
+- `git push origin HEAD` — 冷卻期外自動觸發，訊息 `[auto] update kpi sessions`
+- Dashboard → `raw.githubusercontent.com/.../sessions.csv` → 瀏覽器 localStorage（merge by session_id）
+
+**停用自動 push**：把 `data/config.json` 的 `auto_push` 設為 `false`（預設 `true`）。
 
 ---
 

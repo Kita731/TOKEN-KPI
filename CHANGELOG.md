@@ -13,6 +13,14 @@
 - app.py：`secret_key` 改用 `os.environ["FLASK_SECRET"]` 或 `secrets.token_hex(32)` 隨機值，不再硬編碼（修 #10）
 - version_log.csv：補上 0.4.1 / 0.5.0 / 0.5.1 遺漏版本（修 #9）
 
+## [0.5.3] - 2026-04-18
+- bg_save.py：upsert 成功後自動 `git add + commit + push origin HEAD`，5 分鐘 debounce，訊息 `[auto] update kpi sessions`
+- 修復資料流斷鏈：先前 hook 只寫本機 CSV，dashboard 讀 GitHub raw，永遠看不到新資料；本版本讓兩端自動同步
+- bg_save.py：補上遺漏的 `import subprocess`（原 PR 漏帶，push_to_remote 會 NameError 被 try/except 吞掉）
+- config.json 新增 `auto_push` 開關（預設 true），可停用自動推送
+- .gitignore：排除 `data/.last_push`（debounce 時間戳）
+- README：更新「運作原理」段落，標記資料流 hook → auto push → dashboard
+
 ## [0.5.2] - 2026-04-18
 - index.html：加入 30 秒自動輪詢與倒數顯示（修正 ec8c211 誤改到已停用的 templates/dashboard.html）
 - index.html：簡化同步流程 — 移除匯入 modal 與本機 CSV 路徑記憶，改為「GitHub 自動同步 + 右上角手動同步按鈕」

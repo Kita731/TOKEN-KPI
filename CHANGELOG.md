@@ -1,3 +1,10 @@
+## [0.5.2] - 2026-04-18
+- index.html：加入 30 秒自動輪詢與倒數顯示（修正 ec8c211 誤改到已停用的 templates/dashboard.html）
+- index.html：簡化同步流程 — 移除匯入 modal 與本機 CSV 路徑記憶，改為「GitHub 自動同步 + 右上角手動同步按鈕」
+- index.html：空狀態 UI 重寫，改為引導「git push 後重新同步」或手動匯入
+- kpi.js：移除未採用的 File System Access API（openLocalFile / syncFromLocalFile / IndexedDB handle）
+- data/config.json：新增 retention_days 設定檔
+
 ## [0.5.1] - 2026-04-17
 - setup.py：自動偵測 repo 路徑並寫入 ~/.claude/settings.json，clone 到任何路徑無需手動修改
 - 保留使用者現有其他 hooks（merge 模式），路徑相同時不重複寫入

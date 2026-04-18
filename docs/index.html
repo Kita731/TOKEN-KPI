@@ -66,21 +66,11 @@
     .tcr-row { display:flex; gap:.4rem; margin-top:.5rem; }
     td { position:relative; }
 
-    /* Import Modal */
-    .modal-backdrop { display: none; position: fixed; inset: 0; background: #00000090; z-index: 200; align-items: center; justify-content: center; }
-    .modal-backdrop.open { display: flex; }
-    .modal { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; width: 400px; max-width: 92vw; }
-    .modal-title { font-weight: 600; margin-bottom: 1.1rem; }
-    .form-group { margin-bottom: .9rem; }
-    .form-group label { font-size: .78rem; color: var(--muted); display: block; margin-bottom: .35rem; }
-    .form-group select, .form-group input[type=file] { width: 100%; font-size: .85rem; color: var(--text); }
-    .form-note { font-size: .73rem; color: var(--muted); margin-bottom: 1rem; }
-    .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; }
-
-    .metric-info-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.8rem; padding:0 0 0 .3rem; vertical-align:middle; transition:color .15s; line-height:1; }
+.metric-info-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:.8rem; padding:0 0 0 .3rem; vertical-align:middle; transition:color .15s; line-height:1; }
     .metric-info-btn:hover { color:var(--accent); }
     #metric-tip { display:none; position:fixed; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:.9rem 1rem; max-width:340px; font-size:.78rem; line-height:1.6; z-index:500; box-shadow:0 8px 32px #00000080; white-space:pre-line; color:var(--text); }
 
+    @keyframes spin { to { transform: rotate(360deg); } }
     @media (max-width: 640px) {
       .col-4 { flex: 1 1 calc(50% - .5rem); }
       .nav-links a span { display: none; }
@@ -97,8 +87,8 @@
     <a href="weekly.html"><i class="bi bi-calendar-week"></i><span data-i18n="nav.weekly">週報</span></a>
   </div>
   <div class="nav-end" style="align-items:center">
-    <span id="syncFileName" style="display:none;font-size:.68rem;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title=""></span>
-    <button class="btn btn-ghost" onclick="openImport()"><i class="bi bi-upload"></i><span data-i18n="nav.import">匯入</span></button>
+    <span id="syncStatus" style="font-size:.7rem;color:var(--muted)"></span>
+    <button class="btn btn-ghost" id="syncBtn" onclick="manualSync()" title="從 GitHub 重新同步"><i class="bi bi-arrow-clockwise"></i></button>
     <button class="btn btn-ghost" onclick="KPI.exportCSV('sessions')"><i class="bi bi-download"></i><span data-i18n="nav.export">匯出</span></button>
     <button class="btn btn-lang" onclick="I18N.toggleLang()" title="Switch Language"><span data-i18n="nav.lang">EN</span></button>
   </div>
@@ -202,29 +192,6 @@
   </div>
 </div>
 
-<!-- Import Modal -->
-<div class="modal-backdrop" id="importModal">
-  <div class="modal">
-    <div class="modal-title" data-i18n="dash.import.title">匯入 CSV 資料</div>
-    <div class="form-group">
-      <label data-i18n="dash.import.type">資料類型</label>
-      <select id="importType">
-        <option value="sessions" data-i18n="dash.opt.sessions">Sessions（核心指標）</option>
-        <option value="weekly"   data-i18n="dash.opt.weekly">Weekly（週報）</option>
-        <option value="pge"      data-i18n="dash.opt.pge">PGE（流程指標）</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label data-i18n="dash.import.file">選擇 CSV 檔案</label>
-      <input type="file" id="importFile" accept=".csv">
-    </div>
-    <div class="form-note" data-i18n="dash.import.note">重複的 session_id 不會被匯入（merge 模式）</div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeImport()" data-i18n="dash.import.cancel">取消</button>
-      <button class="btn btn-primary" onclick="doImport()"><i class="bi bi-upload"></i> <span data-i18n="dash.import.btn">匯入</span></button>
-    </div>
-  </div>
-</div>
 
 <div id="metric-tip"></div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -353,10 +320,21 @@ function loadTable(n) {
   const sessions = KPI.getSessions().slice(-n).reverse();
   const tbody = document.getElementById('sessionBody');
   if (!sessions.length) {
+    const isZh = I18N.lang === 'zh';
     tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
-      <div class="big">📊</div>
-      <div>${I18N.t('dash.empty.text')}</div>
-      <br><a href="log.html" style="color:var(--accent)">${I18N.t('dash.empty.cta')}</a>
+      <div class="big">📭</div>
+      <div style="font-size:.9rem;margin-bottom:.5rem">${isZh ? '找不到資料' : 'No data found'}</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.8">
+        ${isZh
+          ? '資料會在每次 Claude Code 結束後自動寫入 <code style="color:var(--accent)">data/sessions.csv</code><br>確認已執行 <code style="color:var(--accent)">git push</code> 後點右上角 <i class="bi bi-arrow-clockwise"></i> 重新同步'
+          : 'Data is written automatically after each Claude Code session.<br>Run <code style="color:var(--accent)">git push</code> then click <i class="bi bi-arrow-clockwise"></i> to sync.'}
+      </div>
+      <div style="margin-top:1.2rem;font-size:.72rem;color:var(--muted)">
+        ${isZh ? '或直接' : 'Or'} <label style="color:var(--accent);cursor:pointer">
+          ${isZh ? '手動選擇 CSV 檔案' : 'import CSV manually'}
+          <input type="file" accept=".csv" style="display:none" onchange="importFileInline(this)">
+        </label>
+      </div>
     </div></td></tr>`;
     return;
   }
@@ -416,55 +394,57 @@ function refresh() {
   I18N.applyAll();
 }
 
-async function openImport() {
-  if (window.showOpenFilePicker) {
-    // File System Access API：選擇後記住路徑，下次自動讀取
-    try {
-      const handle = await KPI.openLocalFile();
-      if (!handle) return;
-      const file = await handle.getFile();
-      const r = await KPI.importCSV(file, 'sessions');
-      showSyncFileName(handle.name);
-      const f = document.getElementById('flash');
-      const msg = I18N.lang === 'zh'
-        ? `匯入 ${r.added} 筆（共 ${r.total} 筆），路徑已記憶 — 下次自動同步`
-        : `Imported ${r.added} rows (${r.total} total). Path saved — auto-sync next visit`;
-      f.innerHTML = `<div class="flash"><i class="bi bi-check-circle"></i> ${msg}</div>`;
-      setTimeout(() => f.innerHTML = '', 5000);
-      refresh();
-    } catch (e) {
-      if (e.name !== 'AbortError') alert('Error: ' + e.message);
-    }
-  } else {
-    // 降級：傳統 modal（Firefox / Safari）
-    document.getElementById('importModal').classList.add('open');
-  }
-}
-
-function closeImport() { document.getElementById('importModal').classList.remove('open'); }
-
-async function doImport() {
-  const file = document.getElementById('importFile').files[0];
-  if (!file) { alert(I18N.lang==='zh'?'請選擇 CSV 檔案':'Please select a CSV file'); return; }
+async function importFileInline(input) {
+  const file = input.files[0];
+  if (!file) return;
   try {
-    const r = await KPI.importCSV(file, document.getElementById('importType').value);
-    closeImport();
+    const r = await KPI.importCSV(file, 'sessions');
     const f = document.getElementById('flash');
-    const msg = I18N.lang === 'zh'
-      ? `成功匯入 ${r.added} 筆（共 ${r.total} 筆，略過重複）`
-      : `Imported ${r.added} rows (${r.total} total, duplicates skipped)`;
-    f.innerHTML = `<div class="flash"><i class="bi bi-check-circle"></i> ${msg}</div>`;
-    setTimeout(() => f.innerHTML='', 4000);
+    f.innerHTML = `<div class="flash"><i class="bi bi-check-circle"></i> 匯入 ${r.added} 筆（共 ${r.total} 筆）</div>`;
+    setTimeout(() => f.innerHTML = '', 4000);
     refresh();
-  } catch(e) { alert('Error: '+e.message); }
+  } catch(e) { alert('Error: ' + e.message); }
 }
 
-function showSyncFileName(name) {
-  const el = document.getElementById('syncFileName');
+async function manualSync() {
+  countdown = AUTO_REFRESH_SEC;
+  setSyncStatus('syncing');
+  try {
+    const added = await KPI.syncFromRemote();
+    setSyncStatus(added > 0 ? 'new' : 'ok', added);
+    if (added > 0) refresh();
+  } catch (_) { setSyncStatus('error'); }
+}
+
+const AUTO_REFRESH_SEC = 30;
+let countdown = AUTO_REFRESH_SEC;
+function startAutoRefresh() {
+  const cdEl = document.createElement('span');
+  cdEl.id = 'autoRefreshCountdown';
+  cdEl.style.cssText = 'font-size:.68rem;color:var(--muted);margin-right:.3rem';
+  cdEl.textContent = `${countdown}s`;
+  document.getElementById('syncBtn').before(cdEl);
+  setInterval(async () => {
+    countdown--;
+    cdEl.textContent = `${countdown}s`;
+    if (countdown <= 0) {
+      countdown = AUTO_REFRESH_SEC;
+      await manualSync();
+    }
+  }, 1000);
+}
+
+function setSyncStatus(state, count) {
+  const el = document.getElementById('syncStatus');
   if (!el) return;
-  el.textContent = '📂 ' + name;
-  el.title = name;
-  el.style.display = 'inline';
+  const map = {
+    syncing: '<i class="bi bi-arrow-clockwise" style="animation:spin .8s linear infinite"></i>',
+    ok:      '<i class="bi bi-check-circle" style="color:var(--pass)"></i>',
+    new:     `<span style="color:var(--pass)">+${count}</span>`,
+    error:   '<i class="bi bi-exclamation-circle" style="color:var(--warn)" title="同步失敗，請確認已 git push"></i>',
+  };
+  el.innerHTML = map[state] || '';
+  if (state !== 'syncing') setTimeout(() => { el.innerHTML = ''; }, 4000);
 }
 
 // Flash from log page
@@ -477,28 +457,13 @@ if (msg) {
 
 I18N.init();
 (async () => {
-  const f = document.getElementById('flash');
+  setSyncStatus('syncing');
   try {
-    // 優先：本機已記憶的檔案路徑
-    const localAdded = await KPI.syncFromLocalFile();
-    if (localAdded >= 0) {
-      // 有記憶路徑（不論是否有新資料）
-      const name = await KPI.getStoredFileName();
-      if (name) showSyncFileName(name);
-      if (localAdded > 0) {
-        f.innerHTML = `<div class="flash"><i class="bi bi-file-earmark-check"></i> 從本機同步了 ${localAdded} 筆新資料</div>`;
-        setTimeout(() => f.innerHTML = '', 4000);
-      }
-    } else {
-      // 尚未設定本機路徑，嘗試 GitHub remote
-      const remoteAdded = await KPI.syncFromRemote();
-      if (remoteAdded > 0) {
-        f.innerHTML = `<div class="flash"><i class="bi bi-cloud-download"></i> 從 GitHub 同步了 ${remoteAdded} 筆新資料</div>`;
-        setTimeout(() => f.innerHTML = '', 4000);
-      }
-    }
-  } catch (_) {}
+    const added = await KPI.syncFromRemote();
+    setSyncStatus(added > 0 ? 'new' : 'ok', added);
+  } catch (_) { setSyncStatus('error'); }
   refresh();
+  startAutoRefresh();
 })();
 </script>
 </body>

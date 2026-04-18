@@ -281,39 +281,38 @@ const KPI = {
   // ── CSV Import ────────────────────────────────────────
 
   parseCSV(text) {
-    const lines = text.replace(/^\uFEFF/, '').trim().split(/\r?\n/);
-    if (lines.length < 2) return [];
+    text = text.replace(/^\uFEFF/, '');
+    if (!text.trim()) return [];
 
-    const parseRow = line => {
-      const result = [];
-      let i = 0;
-      while (i <= line.length) {
-        if (line[i] === '"') {
-          let val = ''; i++;
-          while (i < line.length) {
-            if (line[i] === '"' && line[i+1] === '"') { val += '"'; i += 2; }
-            else if (line[i] === '"') { i++; break; }
-            else val += line[i++];
-          }
-          if (line[i] === ',') i++;
-          result.push(val);
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
         } else {
-          let val = '';
-          while (i < line.length && line[i] !== ',') val += line[i++];
-          if (line[i] === ',') i++;
-          result.push(val);
+          field += c;
         }
+      } else {
+        if (c === '"') inQuotes = true;
+        else if (c === ',') { row.push(field); field = ''; }
+        else if (c === '\n') { row.push(field); rows.push(row); field = ''; row = []; }
+        else if (c !== '\r') field += c;
       }
-      return result;
-    };
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
 
-    const headers = parseRow(lines[0]);
-    return lines.slice(1).filter(l => l.trim()).map(line => {
-      const vals = parseRow(line);
-      const obj = {};
-      headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
-      return obj;
-    });
+    if (rows.length < 2) return [];
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1)
+      .filter(r => r.some(v => v !== ''))
+      .map(r => {
+        const obj = {};
+        headers.forEach((h, i) => { obj[h] = (r[i] ?? '').trim(); });
+        return obj;
+      });
   },
 
   importCSV(file, type = 'sessions') {

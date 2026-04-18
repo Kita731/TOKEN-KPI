@@ -1,9 +1,11 @@
+import os
+import secrets
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from datetime import date
 import kpi_core as kpi
 
 app = Flask(__name__)
-app.secret_key = "token-kpi-secret"
+app.secret_key = os.environ.get("FLASK_SECRET") or secrets.token_hex(32)
 
 
 # ── 頁面路由 ──────────────────────────────────────────────

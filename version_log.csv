@@ -1,4 +1,8 @@
 version,date,description
+0.5.4,2026-04-18,快速修正：parseCSV 多行引號 / Flask secret_key 改隨機 / version_log 補版本
 0.5.2,2026-04-18,dashboard 30 秒自動輪詢修正 + 同步流程簡化 + retention_days 設定
+0.5.1,2026-04-17,setup.py 自動偵測 repo 路徑並寫入 ~/.claude/settings.json
+0.5.0,2026-04-17,i18n 強化：desc/help tooltip 系統 + 各頁面說明文字
+0.4.1,2026-04-17,全自動追蹤：Stop hook 背景儲存 + Dashboard 支援 AUTO tag
 0.2.0,2026-04-17,Flask 網頁儀表板（Dashboard + Log Session + 週報）+ kpi_core 資料層
 0.1.0,2026-04-17,初始版本：四維度十指標 KPI 系統（log_session / weekly_review / dashboard）

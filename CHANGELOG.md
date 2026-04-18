@@ -1,3 +1,8 @@
+## [0.5.4] - 2026-04-18
+- docs/js/kpi.js：重寫 `parseCSV` 為狀態機，正確處理引號內換行（修 #8）
+- app.py：`secret_key` 改用 `os.environ["FLASK_SECRET"]` 或 `secrets.token_hex(32)` 隨機值，不再硬編碼（修 #10）
+- version_log.csv：補上 0.4.1 / 0.5.0 / 0.5.1 遺漏版本（修 #9）
+
 ## [0.5.2] - 2026-04-18
 - index.html：加入 30 秒自動輪詢與倒數顯示（修正 ec8c211 誤改到已停用的 templates/dashboard.html）
 - index.html：簡化同步流程 — 移除匯入 modal 與本機 CSV 路徑記憶，改為「GitHub 自動同步 + 右上角手動同步按鈕」

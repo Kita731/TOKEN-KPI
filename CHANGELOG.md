@@ -1,3 +1,7 @@
+## [0.5.7] - 2026-04-18
+- README：重寫為精簡雙語版，版本 badge 更新到 0.5.6，新增 `auto_push` / `retention_days` 設定表、CLI 工具表
+- README：移除過時的「首次使用點匯入」說明（Dashboard 現在自動從 GitHub 同步），運作原理圖改畫完整資料流
+
 ## [0.5.6] - 2026-04-18
 - kpi_core：SESSIONS_FIELDNAMES / PGE_FIELDNAMES / WEEKLY_FIELDNAMES 成為唯一真相來源
 - log_session / weekly_review / tracker/bg_save / tracker/finalize：移除重複定義，改 import

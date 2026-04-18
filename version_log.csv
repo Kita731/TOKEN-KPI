@@ -1,4 +1,5 @@
 version,date,description
+0.5.7,2026-04-18,README 重寫：精簡雙語 + 更新資料流圖 + 移除過時匯入說明
 0.5.6,2026-04-18,FIELDNAMES 集中到 kpi_core + 週報平均略過空值
 0.5.5,2026-04-18,棄用本地 Flask 伺服器 + Dashboard 前端套用 retention_days 修剪
 0.5.4,2026-04-18,快速修正：parseCSV 多行引號 / Flask secret_key 改隨機 / version_log 補版本

@@ -1,4 +1,5 @@
 version,date,description
+0.5.6,2026-04-18,FIELDNAMES 集中到 kpi_core + 週報平均略過空值
 0.5.4,2026-04-18,快速修正：parseCSV 多行引號 / Flask secret_key 改隨機 / version_log 補版本
 0.5.2,2026-04-18,dashboard 30 秒自動輪詢修正 + 同步流程簡化 + retention_days 設定
 0.5.1,2026-04-17,setup.py 自動偵測 repo 路徑並寫入 ~/.claude/settings.json

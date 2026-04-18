@@ -16,16 +16,10 @@ KPI_DIR      = Path(__file__).parent.parent
 DATA_DIR     = KPI_DIR / "data"
 SESSIONS_CSV = DATA_DIR / "sessions.csv"
 
-WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
+sys.path.insert(0, str(KPI_DIR))
+from kpi_core import SESSIONS_FIELDNAMES as FIELDNAMES  # noqa: E402
 
-FIELDNAMES = [
-    "date", "session_id", "project",
-    "total_tasks", "passed_first_try", "tcr",
-    "avg_iterations", "ic",
-    "lines_generated", "lines_kept", "car",
-    "ttwc_claude_min", "ttwc_manual_estimate_min", "ttwc_ratio",
-    "notes",
-]
+WRITE_TOOLS = {"Write", "Edit", "MultiEdit", "NotebookEdit"}
 
 
 def load_events(path: Path) -> list[dict]:

@@ -7,18 +7,12 @@ from datetime import date, timedelta
 from pathlib import Path
 from statistics import mean
 
+from kpi_core import WEEKLY_FIELDNAMES
+
 DATA_DIR = Path(__file__).parent / "data"
 SESSIONS_CSV = DATA_DIR / "sessions.csv"
 WEEKLY_CSV = DATA_DIR / "weekly.csv"
 PGE_CSV = DATA_DIR / "pge.csv"
-
-WEEKLY_FIELDNAMES = [
-    "week_start", "week_end", "total_sessions",
-    "bugs_per_1000_lines", "bir",
-    "rework_rate", "rr",
-    "prompt_cache_hit_rate", "context_efficiency", "ce",
-    "notes",
-]
 
 
 def load_csv(path: Path) -> list[dict]:
@@ -39,11 +33,26 @@ def filter_by_week(rows, week_start, week_end):
     return [r for r in rows if week_start <= r.get("date", "") <= week_end]
 
 
-def safe_float(v, default=0.0):
-    try:
-        return float(v)
-    except (ValueError, TypeError):
-        return default
+def collect(rows, key):
+    """收集非空數值，略過空字串 / 非數字，避免拉低平均。"""
+    vals = []
+    for r in rows:
+        raw = r.get(key, "")
+        if raw == "" or raw is None:
+            continue
+        try:
+            vals.append(float(raw))
+        except (ValueError, TypeError):
+            continue
+    return vals
+
+
+def fmt_pct(vals):
+    return f"{mean(vals):.1%}" if vals else "—"
+
+
+def fmt_num(vals, spec=".1f"):
+    return format(mean(vals), spec) if vals else "—"
 
 
 def main():
@@ -57,10 +66,10 @@ def main():
         print(f"找不到 {week_start} ~ {week_end} 的 session 資料")
         return
 
-    tcr_vals = [safe_float(r["tcr"]) for r in week_sessions]
-    ic_vals = [safe_float(r["ic"]) for r in week_sessions]
-    car_vals = [safe_float(r["car"]) for r in week_sessions]
-    ttwc_vals = [safe_float(r["ttwc_ratio"]) for r in week_sessions]
+    tcr_vals  = collect(week_sessions, "tcr")
+    ic_vals   = collect(week_sessions, "ic")
+    car_vals  = collect(week_sessions, "car")
+    ttwc_vals = collect(week_sessions, "ttwc_ratio")
 
     print(f"""
 ╔══════════════════════════════════════════╗
@@ -69,24 +78,24 @@ def main():
 
 Sessions: {len(week_sessions)}
 
-[ 核心指標平均 ]
-  TCR  Task Completion Rate : {mean(tcr_vals):.1%}  (目標 > 70%)
-  IC   Iteration Count      : {mean(ic_vals):.1f}   (目標 < 3)
-  CAR  Code Acceptance Rate : {mean(car_vals):.1%}  (目標 > 60%)
-  TTWC Time-to-Working-Code : {mean(ttwc_vals):.1%}  (目標 < 50%)
+[ 核心指標平均（僅計入非空值）]
+  TCR  Task Completion Rate : {fmt_pct(tcr_vals)}  (n={len(tcr_vals)}, 目標 > 70%)
+  IC   Iteration Count      : {fmt_num(ic_vals)}   (n={len(ic_vals)}, 目標 < 3)
+  CAR  Code Acceptance Rate : {fmt_pct(car_vals)}  (n={len(car_vals)}, 目標 > 60%)
+  TTWC Time-to-Working-Code : {fmt_pct(ttwc_vals)}  (n={len(ttwc_vals)}, 目標 < 50%)
 """)
 
     # PGE
     pge_rows = load_csv(PGE_CSV)
     week_pge = filter_by_week(pge_rows, week_start, week_end)
     if week_pge:
-        pa_vals = [safe_float(r["pa"]) for r in week_pge]
-        ecr_vals = [safe_float(r["ecr"]) for r in week_pge]
-        hl_vals = [safe_float(r["hl"]) for r in week_pge]
+        pa_vals  = collect(week_pge, "pa")
+        ecr_vals = collect(week_pge, "ecr")
+        hl_vals  = collect(week_pge, "hl")
         print(f"""[ PGE 流程指標平均 ]
-  PA   Plan Accuracy        : {mean(pa_vals):.1%}
-  ECR  Evaluator Catch Rate : {mean(ecr_vals):.1%}
-  HL   Handoff Loss         : {mean(hl_vals):.1f} 次/session
+  PA   Plan Accuracy        : {fmt_pct(pa_vals)}
+  ECR  Evaluator Catch Rate : {fmt_pct(ecr_vals)}
+  HL   Handoff Loss         : {fmt_num(hl_vals)} 次/session
 """)
 
     # 品質指標（手動輸入）

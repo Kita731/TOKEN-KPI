@@ -1,3 +1,8 @@
+## [0.5.6] - 2026-04-18
+- kpi_core：SESSIONS_FIELDNAMES / PGE_FIELDNAMES / WEEKLY_FIELDNAMES 成為唯一真相來源
+- log_session / weekly_review / tracker/bg_save / tracker/finalize：移除重複定義，改 import
+- weekly_review：核心指標 / PGE 平均改為「略過空值」，並顯示 n 值；全空時顯示 `—` 不再印 0
+
 ## [0.5.4] - 2026-04-18
 - docs/js/kpi.js：重寫 `parseCSV` 為狀態機，正確處理引號內換行（修 #8）
 - app.py：`secret_key` 改用 `os.environ["FLASK_SECRET"]` 或 `secrets.token_hex(32)` 隨機值，不再硬編碼（修 #10）

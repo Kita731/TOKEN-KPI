@@ -127,14 +127,8 @@ def estimate_lines_kept(cwd: str, written_files: list[str]) -> int | None:
 import csv
 import uuid as _uuid
 
-FIELDNAMES = [
-    "date", "session_id", "project",
-    "total_tasks", "passed_first_try", "tcr",
-    "avg_iterations", "ic",
-    "lines_generated", "lines_kept", "car",
-    "ttwc_claude_min", "ttwc_manual_estimate_min", "ttwc_ratio",
-    "notes",
-]
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from kpi_core import SESSIONS_FIELDNAMES as FIELDNAMES  # noqa: E402
 
 
 def append_csv(row: dict):

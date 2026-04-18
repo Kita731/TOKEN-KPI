@@ -6,26 +6,14 @@ import uuid
 from datetime import date
 from pathlib import Path
 
+from kpi_core import (
+    SESSIONS_FIELDNAMES as FIELDNAMES_SESSION,
+    PGE_FIELDNAMES as FIELDNAMES_PGE,
+)
+
 DATA_DIR = Path(__file__).parent / "data"
 SESSIONS_CSV = DATA_DIR / "sessions.csv"
 PGE_CSV = DATA_DIR / "pge.csv"
-
-FIELDNAMES_SESSION = [
-    "date", "session_id", "project",
-    "total_tasks", "passed_first_try", "tcr",
-    "avg_iterations", "ic",
-    "lines_generated", "lines_kept", "car",
-    "ttwc_claude_min", "ttwc_manual_estimate_min", "ttwc_ratio",
-    "notes",
-]
-
-FIELDNAMES_PGE = [
-    "date", "session_id",
-    "plan_steps_total", "plan_steps_adopted", "pa",
-    "issues_caught_by_evaluator", "total_final_issues", "ecr",
-    "handoff_loss_count", "hl",
-    "notes",
-]
 
 
 def ask(prompt, default=None, cast=float):

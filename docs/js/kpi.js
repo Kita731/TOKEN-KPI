@@ -365,7 +365,24 @@ const KPI = {
         }
       } catch (_) {}
     }
+    await this.applyRetention(baseUrl);
     return totalAdded;
+  },
+
+  async applyRetention(baseUrl) {
+    try {
+      const res = await fetch(`${baseUrl}/config.json?_=${Date.now()}`);
+      if (!res.ok) return;
+      const days = parseInt((await res.json()).retention_days) || 0;
+      if (days <= 0) return;
+      const cutoff = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+      for (const key of ['kpi_sessions', 'kpi_weekly', 'kpi_pge']) {
+        const rows = JSON.parse(localStorage.getItem(key) || '[]');
+        const dateField = key === 'kpi_weekly' ? 'week_start' : 'date';
+        const kept = rows.filter(r => (r[dateField] || '9999') >= cutoff);
+        if (kept.length !== rows.length) localStorage.setItem(key, JSON.stringify(kept));
+      }
+    } catch (_) {}
   },
 
 };

@@ -3,6 +3,11 @@
 - log_session / weekly_review / tracker/bg_save / tracker/finalize：移除重複定義，改 import
 - weekly_review：核心指標 / PGE 平均改為「略過空值」，並顯示 n 值；全空時顯示 `—` 不再印 0
 
+## [0.5.5] - 2026-04-18
+- 棄用本地 Flask 伺服器：刪除 `app.py` / `requirements.txt` / `templates/`（GitHub Pages + Dashboard 已覆蓋所有功能；連帶撤銷 0.5.4 的 `app.py` secret_key 改動）
+- README：移除選項二 Flask 說明與檔案結構中的 Flask 相關項目
+- kpi.js：`syncFromRemote` 新增 `applyRetention`，從 `config.json` 讀取 `retention_days` 後修剪 localStorage 過期資料
+
 ## [0.5.4] - 2026-04-18
 - docs/js/kpi.js：重寫 `parseCSV` 為狀態機，正確處理引號內換行（修 #8）
 - app.py：`secret_key` 改用 `os.environ["FLASK_SECRET"]` 或 `secrets.token_hex(32)` 隨機值，不再硬編碼（修 #10）

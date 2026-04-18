@@ -115,14 +115,6 @@ py setup.py
 2. 首次使用：點選右上角「匯入」→ 選擇 `data/sessions.csv`
 3. 之後：資料存在 localStorage，重開瀏覽器都在
 
-#### 選項二：本地 Flask 伺服器（即時同步 CSV）
-
-```bash
-pip install flask
-py app.py
-# 開啟 http://localhost:5000
-```
-
 #### 進階結算（手動補充 TCR / CAR）
 
 ```bash
@@ -156,11 +148,9 @@ TOKEN-KPI/
 │   ├── weekly.csv
 │   └── pge.csv
 │
-├── app.py                # 本地 Flask 網頁版
 ├── kpi_core.py           # Python 計算層
 ├── log_session.py        # CLI 手動記錄
-├── dashboard.py          # CLI 終端機看板
-└── requirements.txt      # flask
+└── dashboard.py          # CLI 終端機看板
 ```
 
 ---
@@ -240,14 +230,6 @@ Data is stored in two places:
 2. First time: click **Import** (top-right) → select `data/sessions.csv`
 3. After that: data lives in localStorage, persists across browser restarts
 
-#### Option 2: Local Flask Server (real-time CSV sync)
-
-```bash
-pip install flask
-py app.py
-# Open http://localhost:5000
-```
-
 #### Advanced: Fill in TCR / CAR
 
 ```bash
@@ -310,9 +292,7 @@ TOKEN-KPI/
 │   ├── weekly.csv
 │   └── pge.csv
 │
-├── app.py                # Local Flask web server
 ├── kpi_core.py           # Shared Python calculation layer
 ├── log_session.py        # CLI manual logger
-├── dashboard.py          # CLI terminal dashboard
-└── requirements.txt      # flask
+└── dashboard.py          # CLI terminal dashboard
 ```
